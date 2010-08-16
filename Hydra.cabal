@@ -1,0 +1,69 @@
+name: Hydra
+version: 0.3.7
+cabal-Version: >= 1.2
+license: BSD3
+license-file: LICENSE
+copyright: (c) 2007-2009 George Giorgidze and Henrik Nilsson
+author: George Giorgidze and Henrik Nilsson
+maintainer: George Giorgidze ( ggg (at) cs.nott.ac.uk )
+homepage: http://www.cs.nott.ac.uk/~ggg/
+category: Language, Math, Physics
+stability: experimental
+synopsis: Functional Hybrid Modelling (FHM) language.
+description: An implementation of Hydra, a Functional Hybrid Modelling (FHM) language, as a domain specific language embedded in Haskell.
+build-type: Custom
+
+extra-source-files:
+  README
+  examples/BouncingBall.hs
+  examples/BreakingPendulum.hs
+  examples/Functions.hs
+  examples/Mechanics.hs
+  examples/SimpleCircuit.hs
+  examples/SineOsc.hs
+  examples/VanDerPol.hs
+data-files:
+  cbits/hydra_llvm.c
+  cbits/hydra_llvm.s
+  cbits/hydra_llvm.bc
+
+library
+  hs-source-dirs: src
+  ghc-options: -Wall -O3
+  cc-options:  -Wall -O3
+  build-Depends: base >= 4, containers, array, mtl, template-haskell, llvm, syntax-trees
+  extra-libraries: sundials_nvecserial, sundials_ida
+  c-sources:
+    cbits/nv.c
+  exposed-modules:
+    Hydra
+  other-modules:
+    Hydra.BNFC.ErrM
+    Hydra.BNFC.LexHydra
+    Hydra.BNFC.LayoutHydra
+    Hydra.BNFC.AbsHydra
+    Hydra.BNFC.ParHydra
+
+    Hydra.Data
+
+    Hydra.Stages.Parse
+    Hydra.Stages.Desugar
+    Hydra.Stages.Quote
+    Hydra.Stages.BuildNewToOld
+    Hydra.Stages.HandleEvents
+    Hydra.Stages.BuildEvents
+    Hydra.Stages.Flatten
+    Hydra.Stages.Validate
+    Hydra.Stages.ToLLVM
+    Hydra.Stages.JIT
+    Hydra.Stages.Simulate
+    Hydra.Stages.DAE
+
+    Hydra.FFI.Sundials.Raw
+    Hydra.FFI.Sundials.NVec
+    Hydra.FFI.Sundials.IDA
+
+    Hydra.Utils.Impossible
+    Hydra.Utils.LLVM
+
+    Paths_Hydra

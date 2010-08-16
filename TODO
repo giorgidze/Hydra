@@ -1,0 +1,47 @@
+Short Term
+-----------
+
+Replace pre with cur.
+
+
+Inline the code for vector getters and setters.
+
+
+Medium Term
+-----------
+
+Implement support for higher index systems using symbolic methods instead of
+currently used numerical methods.
+
+
+Impulses can be introduced in addition to events to avoid a complete code
+regeneration in some cases.
+
+
+Sometimes KINSOL fails when provided initial guess is 0. As a temporary
+solution initial guess of 0.1 is used.
+
+
+Provide proper documentation.
+
+
+Provide testing framework and check the code coverage.
+
+
+Long Term
+-----------
+
+
+Sundials has support for inequalities. Maybe this can be
+put into a good use.
+
+
+Statically check that pres do not appear in ordinary and init equations.
+
+
+Unicode characters are not supported in the anti-quoted Haskell
+expressions. Currently the corresponding line in the grammar file reads:
+
+token HsExpr ('$' (char - '$')* '$') ;
+
+according to BNFC documentation "char" represents an ASCII character.

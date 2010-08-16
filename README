@@ -1,0 +1,72 @@
+What is Hydra?
+--------------
+
+Hydra is a high level, declarative language for modelling and simulation of
+physical systems. Systems in Hydra are being modelled using implicitly
+formulated (undirected) Differential Algebraic Equations (DAEs). While,
+physical modelling is our main focus any domain is fine where problems can be
+formulated using DAEs.
+
+The language provides constructs for definition and composition of model
+fragments that enable modelling and simulation of large, complex, hybrid and
+highly structurally dynamic systems.
+
+The first outline of Hydra was given by Nilsson et al. in the framework called
+Functional Hybrid Modelling (FHM). Subsequently, a number of papers has been
+published about the design and implementation of Hydra that can be accessed on
+the following web pages:
+
+* http://www.cs.nott.ac.uk/~ggg/
+
+* http://www.cs.nott.ac.uk/~nhn/
+
+
+The implementation of Hydra
+---------------------------
+
+Currently, Hydra is implemented as a domain specific language embedded in
+Haskell. Hydra is still in active development.
+
+
+How to get Hydra
+----------------
+
+The latest development version of Hydra can be obtained from its darcs
+repository by issuing the following command:
+
+> darcs get http://patch-tag.com/r/Hydra/pullrepo Hydra
+
+You can also browse the sources in your browser:
+http://patch-tag.com/r/Hydra/snapshot/current/content/pretty
+
+
+How to install Hydra
+--------------------
+
+In order to install Hydra you need to have GHC (http://www.haskell.org/ghc/)
+version 6.10 (or later) available on your system. In addition, you need LLVM
+(http://llvm.org/) version 2.6.
+
+The implementation of Hydra is packaged using Cabal. So it should be straight
+forward to install. Simply issue the following commands in the directory that
+you have just obtained using darcs:
+
+> runhaskell Setup.hs configure
+> runhaskell Setup.hs build
+> runhaskell Setup.hs install
+
+If you have cabal-install tool available on your system there is an even
+simpler way. Simply issue the following command in the directory of Hydra:
+
+> cabal install
+
+
+How to use Hydra
+----------------
+
+Currently, there is no documentation provided, only examples, I am
+afraid. There are also research papers (see above) that I recommend to read if
+you are interested. In any case, you are very welcome to contact me.
+
+Cheers, George Giorgidze
+Email: ggg (at) cs.nott.ac.uk
