@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Hydra.Stages.Quote (sigrel,sigfun) where
+module Hydra.Stages.Quote (rel,fun) where
 
 import Hydra.Utils.Impossible (impossible)
 import qualified Hydra.BNFC.AbsHydra as BNFC
@@ -13,11 +13,11 @@ import Language.Haskell.SyntaxTrees.ExtsToTH (parseToTH)
 import qualified Language.Haskell.TH.Quote as QQ (QuasiQuoter(..))
 import qualified Language.Haskell.TH as TH
 
-sigrel  :: QQ.QuasiQuoter
-sigrel  =  QQ.QuasiQuoter quoteSigRel (error "Pattern matching on signal relations is not supported")
+rel  :: QQ.QuasiQuoter
+rel  =  QQ.QuasiQuoter quoteSigRel (error "Pattern matching on signal relations is not supported")
 
-sigfun  :: QQ.QuasiQuoter
-sigfun  =  QQ.QuasiQuoter quoteSigFun (error "Pattern matching of signal functions is not supported")
+fun  :: QQ.QuasiQuoter
+fun  =  QQ.QuasiQuoter quoteSigFun (error "Pattern matching on signal functions is not supported")
 
 quoteSigRel :: String -> TH.ExpQ
 quoteSigRel s = do
@@ -41,9 +41,7 @@ quotePattern pat = case pat of
   BNFC.PatternName _ (BNFC.LIdent s1) -> TH.varP (TH.mkName s1)
   BNFC.PatternTuple [] -> TH.conP (TH.mkName "Unit") [TH.conP (TH.mkName "()") []]
   BNFC.PatternTuple [pat1] -> quotePattern pat1
-  BNFC.PatternTuple pats -> TH.conP (TH.mkName ("Tuple" ++ show (length pats))) (map quotePattern pats) -- (return . TH.TupP)
-
---mapM quotePattern pats >>= (return . TH.conP (TH.mkName ("Tuple" ++ show (length pats)))) -- (return . TH.TupP)
+  BNFC.PatternTuple pats -> TH.conP (TH.mkName ("Tuple" ++ show (length pats))) (map quotePattern pats)
 
 quoteEquations :: [BNFC.Equation] -> TH.ExpQ
 quoteEquations [] = [| [] |]
@@ -84,7 +82,6 @@ quoteExpr e = case e of
   BNFC.ExprTuple [] -> [| Unit () |]
   BNFC.ExprTuple [e1] -> quoteExpr e1
   BNFC.ExprTuple (e1 : e2 : es) -> foldl TH.appE (TH.conE (TH.mkName ("Tuple" ++ show (length es + 2)))) ((quoteExpr e1) : (quoteExpr e2) : (map quoteExpr es))
-   --TH.tupE ((quoteExpr e1) : (quoteExpr e2) : (map quoteExpr es))
 
 quoteBExpr :: BNFC.BExpr -> TH.ExpQ
 quoteBExpr be = case be of

@@ -28,8 +28,8 @@ hydraPreConf = do
 
   let arch = map toLower (show buildArch)
 
-  rawSystemProgramConf verbose clang   conf ["-arch",arch,"-Wall","-O3","-S","-emit-llvm", "-o","cbits/hydra_llvm.s","cbits/hydra_llvm.c","-I/opt/local/include"]
-  rawSystemProgramConf verbose llvm_as conf ["-f","-o", "cbits/hydra_llvm.bc","cbits/hydra_llvm.s"]
+  rawSystemProgramConf verbose clang   conf ["-arch", arch, "-Wall", "-O3", "-S", "-emit-llvm", "-o", "cbits/hydra_llvm.s", "cbits/hydra_llvm.c", "-I/opt/local/include"]
+  rawSystemProgramConf verbose llvm_as conf ["-f", "-o", "cbits/hydra_llvm.bc","cbits/hydra_llvm.s"]
 
 hydraPreClean :: IO ()
 hydraPreClean = do

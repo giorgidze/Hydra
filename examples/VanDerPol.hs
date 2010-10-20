@@ -5,7 +5,7 @@ module Main where
 import Hydra
 
 vanDerPol :: Double -> SR ()
-vanDerPol lambda = [$sigrel| () where
+vanDerPol lambda = [$rel| () ->
     local x y
     init x = 1
     init y = 1

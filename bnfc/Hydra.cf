@@ -1,8 +1,8 @@
 entrypoints SigRel, SigFun;
 
-SigRel. SigRel ::= Pattern "where" "{" [Equation] "}" ;
+SigRel. SigRel ::= Pattern "->" "{" [Equation] "}" ;
 
-SigFun. SigFun ::= Pattern "->" BExpr ;
+SigFun. SigFun ::= Pattern "->" "{" BExpr "}" ;
 
 PatternWild.     Pattern ::= "_" ;
 PatternName.     Pattern ::= PatternNameQual LIdent ;
@@ -64,5 +64,5 @@ token LIdent (lower (letter | digit | '_')*) ;
 token HsExpr ('$' (char - '$')* '$') ;
 
 -- layout toplevel ;
-layout "where" ;
+layout "->" ;
 -- layout stop "in"
