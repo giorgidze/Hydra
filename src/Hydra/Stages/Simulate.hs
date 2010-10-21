@@ -44,14 +44,9 @@ simulateAux exper symtab = do
   nvConstant idv 0.0
 
   initialiseVectors symtab1 y idv
-
-  -- nvToUArray idv >>= printSolution (timeStart exper)
-
-  -- nvToUArray y >>= printSolution (timeStart exper)
+  
   zeroCrossingHack y
-  -- nvToUArray y >>= printSolution (timeStart exper)
   solver <- DAE.createSolver equation_ptr (timeStart exper) (timeStop exper) y yp idv nVarEv event_equation_ptr
-  -- nvToUArray y >>= printSolution (timeStart exper)
 
   let loop :: Bool -> Double -> IO ()
       loop firstCall t1 = do
@@ -75,8 +70,7 @@ simulateAux exper symtab = do
                           let symtabNew = symtab1 {instants = instants1, instantsDiff = instantsDiff1, events = Map.map f (events symtab1)}
                           simulateAux (exper{timeStart = t2}) (symtabNew{timeCurrent = t2})
 
-  -- v1 <- nvToUArray y
-  -- printSolution (timeStart exper) v1
+  nvToUArray y >>= printSolution symtab1 (timeStart exper)
   loop True (timeStart exper + timeStep exper)
 
 initialiseVectors :: SymTab -> NVec -> NVec -> IO ()

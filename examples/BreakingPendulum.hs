@@ -26,13 +26,14 @@ freeFall ((x0,y0),(vx0,vy0)) = [$rel| ((x,y),(vx,vy)) ->
 pendulum :: Double -> Double -> SR Body
 pendulum l phi0 = [$rel| ((x,y),(vx,vy)) ->
     local phi phid
+
     init phi  = $phi0$
     init phid = 0
-    init (vx,vy) = (0,0)
+    init (x,y) = ($l$ * sin $phi0$, - $l$ * cos $phi0$)
 
     reinit phi  = cur phi
     reinit phid = cur phid
-    reinit (vx,vy) = (cur vx,cur vy)
+    reinit (x,y) = (cur x,cur y)
 
     phid = der phi
 

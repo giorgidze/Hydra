@@ -21,9 +21,9 @@ createSolver resfunptr tStart tStop y yp idv en rootfunptr = do
   let abstol = 1.0E-8;
   idaSStolerances ida reltol abstol
   idaSetId ida idv
-  idaSetSuppressAlg ida False
+  idaSetSuppressAlg ida True
   idaDense ida neq
-  idaCalcIC ida (tStart + 0.00001)
+  idaCalcIC ida (tStart + 1.0E-3)
   when (en > 0) (idaRootInit ida en rootfunptr)
   idaSetStopTime ida tStop
 
