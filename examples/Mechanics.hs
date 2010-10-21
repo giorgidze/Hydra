@@ -25,11 +25,23 @@ engine2 meanTau = [$rel| (phi, flow tau) ->
     tau = transm * $meanTau$
 |]
 
-wheel :: Double -> Wheel
-wheel inertia = [$rel| (phi, flow tau) ->
-    local phid
-    phid = der phi
-    - tau = der phid * $inertia$
+engineSwitch :: Engine
+engineSwitch = switch (engine2 10)
+                      [$fun| (phi,_) -> der phi >= 40 |]
+                      (\_ -> engine1 10)
+
+
+wheel :: Double -> State -> Wheel
+wheel inertia (phi0,w0) = [$rel| (phi, flow tau) ->
+    init phi = $phi0$
+    reinit phi = cur phi
+
+    local w
+    init w = $w0$
+    reinit w = cur w
+
+    w = der phi
+    - tau = der w * $inertia$
 |]
 
 gear :: Double -> Gear
@@ -38,22 +50,13 @@ gear ratio = [$rel| ((phi1, flow tau1),(phi2, flow tau2)) ->
     - tau1 = $ratio$ * tau2
 |]
 
-machine ::  State -> Engine -> Machine
-machine  (phi0,w0) engine = [$rel| (phi, flow tau) ->
-    local phid
-    phid = der phi
-
-    init phi = $phi0$
-    init phid = $w0$
-
-    reinit phi = cur phi
-    reinit phid = cur phid
-    
+machine ::  State -> Machine
+machine s = [$rel| (phi, flow tau) ->
     local ePhi eTau g1Phi g1Tau g2Phi g2Tau
 
-    $wheel 1.0$ <> (phi,tau)
+    $wheel 1.0 s$ <> (phi,tau)
     $gear 1.8$ <> ((g1Phi,g1Tau),(g2Phi,g2Tau))
-    $engine$ <> (ePhi,eTau)
+    $engineSwitch$ <> (ePhi,eTau)
 
     connect      ePhi g1Phi
     connect flow eTau g1Tau
@@ -62,20 +65,15 @@ machine  (phi0,w0) engine = [$rel| (phi, flow tau) ->
     connect flow g2Tau tau
 |]
 
-hybridMachine ::  State -> Machine
-hybridMachine s1 = switch (machine s1 (engine2 10))
-                          [$fun| (phi,_) -> der phi >= 40 |]  
-                          (\s2 -> machine s2 (engine1 10))
-
 mainSR :: SR ()
 mainSR = [$rel| () ->
     local a1 t1
-    $hybridMachine (0,0) $ <> (a1,t1)
-    -- $hybridMachine (pi,0)$ <> (a2,t2)
+    $machine (0,0) $ <> (a1,t1)
+    local a2 t2
+    $machine (pi,0)$ <> (a2,t2)
 |]
 
 main :: IO ()
 main = do
-  -- simulate defaultExperiment{execEngine = Interpreter} mainSR
   simulate defaultExperiment mainSR
   return ()
