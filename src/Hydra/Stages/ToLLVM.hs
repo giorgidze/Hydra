@@ -51,7 +51,7 @@ compile exper st = do
 
 compileModuleRef :: C ()
 compileModuleRef = do
-  -- moduleRef1 <-  lift $ FFI.withCString "HydraModule" LLVM.moduleCreateWithName
+
   bitcodeFile <- lift (Cabal.getDataFileName "cbits/hydra_llvm.bc")
   moduleRef1 <- lift (LLVM.readBitcode bitcodeFile)
 
@@ -63,7 +63,6 @@ compileModuleRef = do
   compileFunctionDeclarations
   compileEquation
   compileEventEquation
-
   cleanupBuilder
 
 
@@ -123,7 +122,7 @@ compileEquation = do
   yVecRef1  <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 1]
   ypVecRef1 <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 2]
   rVecRef1  <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 3]
-
+  
   let params1 = Params { tRef     = LLVM.getParam functionRef1 0
                        , yVecRef  = yVecRef1
                        , ypVecRef = ypVecRef1
@@ -134,7 +133,6 @@ compileEquation = do
   symtab1 <- return . symtab  =<< get
 
   let exprs = equations symtab1
-
   -- compileSigs exprs
   compileSigsAux $ zip [0..] exprs
 
@@ -300,7 +298,7 @@ compileSig e = do
       e1Ref <- compileSig e1
       e2Ref <- compileSig e2
       lift $ FFI.withCString []
-           $ \s -> LLVM.buildAdd builderRef1 e1Ref e2Ref s
+           $ \s -> LLVM.buildFAdd builderRef1 e1Ref e2Ref s
     App2 Div e1 e2 -> do
       e1Ref <- compileSig e1
       e2Ref <- compileSig e2
@@ -310,7 +308,7 @@ compileSig e = do
       e1Ref <- compileSig e1
       e2Ref <- compileSig e2
       lift $ FFI.withCString []
-           $ \s -> LLVM.buildMul builderRef1 e1Ref e2Ref s
+           $ \s -> LLVM.buildFMul builderRef1 e1Ref e2Ref s
 
     App2 Pow   e1 e2 -> compileFunctionCall "pow"   [e1,e2]
     App1 Exp   e1    -> compileFunctionCall "exp"   [e1]
