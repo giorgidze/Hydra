@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, TypeFamilies, FlexibleInstances, TemplateHaskell #-}
+{-# LANGUAGE EmptyDataDecls, ExistentialQuantification, TypeFamilies, FlexibleInstances, TemplateHaskell #-}
 
 module Hydra.Data where
 
@@ -8,6 +8,11 @@ import qualified Data.Map as Map
 import Data.Map (Map)
 
 import Data.Maybe (isJust)
+
+import Control.Monad
+
+import Foreign
+import Foreign.C.Types
 
 data SR a =
     SigRel !(Signal a -> [Equation])
@@ -32,7 +37,7 @@ class SignalType a where
   eval :: SymTab -> Signal a -> a
 
 instance SignalType () where
-  data Signal () = Unit ()
+  data Signal () = Unit
   eval _ _ = ()
 
 instance SignalType Double where
@@ -134,7 +139,9 @@ evalSignalBool :: SymTab -> Signal Bool -> Bool
 evalSignalBool st e = case e of
   Or  e1 e2   -> (evalSignalBool st e1) || (evalSignalBool st e2) 
   And e1 e2   -> (evalSignalBool st e1) && (evalSignalBool st e2) 
-  Xor e1 e2   -> if (evalSignalBool st e1) then  Prelude.not (evalSignalBool st e2) else (evalSignalBool st e2)
+  Xor e1 e2   -> if (evalSignalBool st e1)
+                    then  Prelude.not (evalSignalBool st e2)
+                    else (evalSignalBool st e2)
   Comp  f1 e1 -> (evalCompFun f1) (evalSignalDouble st e1)
 
 evalNewToOldBool :: SymTab -> Signal Bool -> Signal Bool
@@ -285,22 +292,57 @@ equationNumber :: SymTab -> Int
 equationNumber = length . equations
 
 data Experiment = Experiment {
-    timeStart  :: !Double
-  , timeStop   :: !Double
-  , timeStep   :: !Double
-  , recsig     :: !RecSig
-  , execEngine :: !ExecEngine
+    timeStart      :: Double
+  , timeStop       :: Double
+  , timeStep       :: Double
+  , jitCompile     :: Bool
+  , visualise      :: CDouble -> CInt -> Ptr CDouble -> IO ()
+  , solver         :: Solver
   }
-  deriving (Eq,Show)
 
-data RecSig =  RecSigMon | RecSigAll | RecSigNone | RecSigDumpMon | RecSigDumpAll deriving (Eq,Show)
-data ExecEngine = JIT | Interpreter deriving (Eq,Show)
-
-defaultExperiment :: Experiment
-defaultExperiment = Experiment {
-    timeStart  = 0.0
-  , timeStop   = 10.0
-  , timeStep   = 1.0E-3
-  , recsig     = RecSigDumpAll
-  , execEngine = JIT
+data Solver = Solver {
+    createSolver    :: CDouble      -- ^ Start time
+                    -> CDouble      -- ^ Stop time
+                    -> Ptr CDouble  -- ^ Current time
+                    -> CInt         -- ^ Number of variables
+                    -> Ptr CDouble  -- ^ Variables
+                    -> Ptr CDouble  -- ^ Differentials
+                    -> Ptr CInt     -- ^ Constrained differentials
+                    -> CInt         -- ^ Number of events
+                    -> Ptr CInt     -- ^ Events
+                    -> Residual     -- ^ Initialisation equations
+                    -> Residual     -- ^ Main equations
+                    -> Residual     -- ^ Event Equations
+                    -> IO SolverHandle
+  , destroySolver   :: SolverHandle -> IO ()
+  , solve           :: SolverHandle -> IO CInt -- ^
+                                               -- Return value 0: soulution has been obtained usccesfully
+                                               -- Return value 1: event has occurence
+                                               -- Return value 2: stop time has been reached
   }
+
+data Void
+type SolverHandle = Ptr Void
+
+type Residual = FunPtr (CDouble -> Ptr CDouble -> Ptr CDouble -> Ptr CDouble -> IO Void)
+
+
+experimentDefault :: Experiment
+experimentDefault = Experiment {
+    timeStart = 0
+  , timeStop = 10
+  , timeStep = 0.001
+  , jitCompile = True
+  , visualise = visualiseDump
+  , solver = error "Solver has not been specified. You can use the solver defined in hydra-sundials package or provide your own."
+  }
+  
+visualiseDump :: CDouble -> CInt -> Ptr CDouble -> IO ()
+visualiseDump time len arr = do
+  putStr (show time)
+  putStr " "
+  forM_ [0 .. (len - 1)] $ \i -> do
+    d <- peekElemOff arr (fromIntegral i);
+    putStr (show d)
+    putStr " "
+  putStrLn []

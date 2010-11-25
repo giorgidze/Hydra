@@ -1,5 +1,5 @@
 {-# OPTIONS -w #-}
-{-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
+{-# OPTIONS_GHC -w #-}
 {-# OPTIONS -fglasgow-exts -cpp #-}
 {-# OPTIONS -fno-warn-incomplete-patterns -fno-warn-overlapping-patterns #-}
 module Hydra.BNFC.ParHydra where
@@ -9,7 +9,7 @@ import Hydra.BNFC.ErrM
 import qualified Data.Array as Happy_Data_Array
 import qualified GHC.Exts as Happy_GHC_Exts
 
--- parser produced by Happy Version 1.18.5
+-- parser produced by Happy Version 1.18.6
 
 newtype HappyAbsSyn  = HappyAbsSyn HappyAny
 #if __GLASGOW_HASKELL__ >= 607
@@ -908,13 +908,13 @@ happyDoAction i tk st
 
 
 				     happyShift new_state i tk st
-				     where !(new_state) = (n Happy_GHC_Exts.-# (1# :: Happy_GHC_Exts.Int#))
-   where !(off)    = indexShortOffAddr happyActOffsets st
-         !(off_i)  = (off Happy_GHC_Exts.+# i)
+				     where (new_state) = (n Happy_GHC_Exts.-# (1# :: Happy_GHC_Exts.Int#))
+   where (off)    = indexShortOffAddr happyActOffsets st
+         (off_i)  = (off Happy_GHC_Exts.+# i)
 	 check  = if (off_i Happy_GHC_Exts.>=# (0# :: Happy_GHC_Exts.Int#))
 			then (indexShortOffAddr happyCheck off_i Happy_GHC_Exts.==#  i)
 			else False
-         !(action)
+         (action)
           | check     = indexShortOffAddr happyTable off_i
           | otherwise = indexShortOffAddr happyDefActions st
 
@@ -924,10 +924,10 @@ happyDoAction i tk st
 indexShortOffAddr (HappyA# arr) off =
 	Happy_GHC_Exts.narrow16Int# i
   where
-	!i = Happy_GHC_Exts.word2Int# (Happy_GHC_Exts.or# (Happy_GHC_Exts.uncheckedShiftL# high 8#) low)
-	!high = Happy_GHC_Exts.int2Word# (Happy_GHC_Exts.ord# (Happy_GHC_Exts.indexCharOffAddr# arr (off' Happy_GHC_Exts.+# 1#)))
-	!low  = Happy_GHC_Exts.int2Word# (Happy_GHC_Exts.ord# (Happy_GHC_Exts.indexCharOffAddr# arr off'))
-	!off' = off Happy_GHC_Exts.*# 2#
+        i = Happy_GHC_Exts.word2Int# (Happy_GHC_Exts.or# (Happy_GHC_Exts.uncheckedShiftL# high 8#) low)
+        high = Happy_GHC_Exts.int2Word# (Happy_GHC_Exts.ord# (Happy_GHC_Exts.indexCharOffAddr# arr (off' Happy_GHC_Exts.+# 1#)))
+        low  = Happy_GHC_Exts.int2Word# (Happy_GHC_Exts.ord# (Happy_GHC_Exts.indexCharOffAddr# arr off'))
+        off' = off Happy_GHC_Exts.*# 2#
 
 
 
@@ -947,7 +947,7 @@ data HappyAddr = HappyA# Happy_GHC_Exts.Addr#
 -- Shifting a token
 
 happyShift new_state 0# tk st sts stk@(x `HappyStk` _) =
-     let !(i) = (case Happy_GHC_Exts.unsafeCoerce# x of { (Happy_GHC_Exts.I# (i)) -> i }) in
+     let (i) = (case Happy_GHC_Exts.unsafeCoerce# x of { (Happy_GHC_Exts.I# (i)) -> i }) in
 --     trace "shifting the error token" $
      happyDoAction i tk new_state (HappyCons (st) (sts)) (stk)
 
@@ -991,19 +991,19 @@ happyMonadReduce k nt fn 0# tk st sts stk
      = happyFail 0# tk st sts stk
 happyMonadReduce k nt fn j tk st sts stk =
         happyThen1 (fn stk tk) (\r -> happyGoto nt j tk st1 sts1 (r `HappyStk` drop_stk))
-       where !(sts1@((HappyCons (st1@(action)) (_)))) = happyDrop k (HappyCons (st) (sts))
+       where (sts1@((HappyCons (st1@(action)) (_)))) = happyDrop k (HappyCons (st) (sts))
              drop_stk = happyDropStk k stk
 
 happyMonad2Reduce k nt fn 0# tk st sts stk
      = happyFail 0# tk st sts stk
 happyMonad2Reduce k nt fn j tk st sts stk =
        happyThen1 (fn stk tk) (\r -> happyNewToken new_state sts1 (r `HappyStk` drop_stk))
-       where !(sts1@((HappyCons (st1@(action)) (_)))) = happyDrop k (HappyCons (st) (sts))
+       where (sts1@((HappyCons (st1@(action)) (_)))) = happyDrop k (HappyCons (st) (sts))
              drop_stk = happyDropStk k stk
 
-             !(off) = indexShortOffAddr happyGotoOffsets st1
-             !(off_i) = (off Happy_GHC_Exts.+# nt)
-             !(new_state) = indexShortOffAddr happyTable off_i
+             (off) = indexShortOffAddr happyGotoOffsets st1
+             (off_i) = (off Happy_GHC_Exts.+# nt)
+             (new_state) = indexShortOffAddr happyTable off_i
 
 
 
@@ -1021,9 +1021,9 @@ happyDropStk n (x `HappyStk` xs) = happyDropStk (n Happy_GHC_Exts.-# (1#::Happy_
 happyGoto nt j tk st = 
    {- nothing -}
    happyDoAction j tk new_state
-   where !(off) = indexShortOffAddr happyGotoOffsets st
-         !(off_i) = (off Happy_GHC_Exts.+# nt)
-         !(new_state) = indexShortOffAddr happyTable off_i
+   where (off) = indexShortOffAddr happyGotoOffsets st
+         (off_i) = (off Happy_GHC_Exts.+# nt)
+         (new_state) = indexShortOffAddr happyTable off_i
 
 
 
@@ -1055,6 +1055,7 @@ happyFail  i tk (action) sts stk =
 
 -- Internal happy errors:
 
+notHappyAtAll :: a
 notHappyAtAll = error "Internal Happy error\n"
 
 -----------------------------------------------------------------------------

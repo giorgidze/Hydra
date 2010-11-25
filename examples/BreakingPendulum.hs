@@ -3,6 +3,7 @@
 module Main where
 
 import Hydra
+import Hydra.Solver.Sundials
 
 type Coordinate = (Double,Double)
 type Velocity = (Double,Double)
@@ -53,5 +54,4 @@ mainSR = [$rel| () ->
 |]
 
 main :: IO ()
-main = do
-  simulate defaultExperiment mainSR
+main = simulate experimentDefault{solver = sundials} mainSR

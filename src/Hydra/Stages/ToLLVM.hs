@@ -22,7 +22,6 @@ type C a = StateT Context IO a
 
 data Context = Context {
     symtab        :: !SymTab
-  , experiment    :: !Experiment
   , params        :: !Params
   , moduleRef     :: !LLVM.ModuleRef
   , functionRef   :: !LLVM.ValueRef
@@ -36,10 +35,9 @@ data Params = Params { tRef     :: !LLVM.ValueRef
                      , rVecRef  :: !LLVM.ValueRef
                      } deriving (Eq,Show)
 
-compile :: Experiment -> SymTab -> IO LLVM.ModuleRef
-compile exper st = do
+compile :: SymTab -> IO LLVM.ModuleRef
+compile st = do
   let initialContext = Context { symtab = st
-                               , experiment = exper
                                , params = Params FFI.nullPtr FFI.nullPtr FFI.nullPtr FFI.nullPtr
                                , moduleRef = FFI.nullPtr
                                , functionRef = FFI.nullPtr
@@ -72,8 +70,12 @@ compileFunctionDeclarations = mapM_ (\(r,n,a) -> compileFunctionDeclaration r n 
 voidPointerType :: LLVM.TypeRef
 voidPointerType = LLVM.pointerType LLVM.int8Type 0
 
-nVectorType :: LLVM.TypeRef
-nVectorType = voidPointerType
+residualArgType :: [LLVM.TypeRef]
+residualArgType = [ LLVM.doubleType
+                  , LLVM.pointerType LLVM.doubleType 0
+                  , LLVM.pointerType LLVM.doubleType 0
+                  , LLVM.pointerType LLVM.doubleType 0
+                  ]
 
 functionDeclarations :: [(LLVM.TypeRef,String,[LLVM.TypeRef])]
 functionDeclarations = [
@@ -95,8 +97,8 @@ functionDeclarations = [
   , (LLVM.doubleType, "fabs",  [LLVM.doubleType])
   , (LLVM.doubleType, "pow",   [LLVM.doubleType, LLVM.doubleType])
 
-  , (LLVM.int32Type, "hydra_equation",         [LLVM.doubleType, nVectorType, nVectorType, nVectorType, voidPointerType])
-  , (LLVM.int32Type, "hydra_event_equation",   [LLVM.doubleType, nVectorType, nVectorType, LLVM.pointerType LLVM.doubleType 0, voidPointerType])
+  , (LLVM.voidType, "hydra_residual_main",  residualArgType)
+  , (LLVM.voidType, "hydra_residual_event", residualArgType)
   ]
 
 compileFunctionDeclaration :: LLVM.TypeRef -> String -> [LLVM.TypeRef] -> C ()
@@ -113,20 +115,15 @@ compileFunctionType retType argTypes = do
 
 compileEquation :: C ()
 compileEquation = do
-  functionRef1 <- getFunctionRef "hydra_equation"
+  functionRef1 <- getFunctionRef "hydra_residual_main"
   modify $ \c -> c {functionRef = functionRef1}
 
   compileBasicBlockEntry
-
-  hydraNVDataRef <- getFunctionRef "hydra_nv_data"
-  yVecRef1  <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 1]
-  ypVecRef1 <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 2]
-  rVecRef1  <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 3]
   
   let params1 = Params { tRef     = LLVM.getParam functionRef1 0
-                       , yVecRef  = yVecRef1
-                       , ypVecRef = ypVecRef1
-                       , rVecRef  = rVecRef1
+                       , yVecRef  = LLVM.getParam functionRef1 1
+                       , ypVecRef = LLVM.getParam functionRef1 2
+                       , rVecRef  = LLVM.getParam functionRef1 3
                        }
   modify $ \c -> c {params = params1}
 
@@ -137,25 +134,20 @@ compileEquation = do
   compileSigsAux $ zip [0..] exprs
 
   builderRef1 <- return . builderRef =<< get
-  _ <- lift $ LLVM.buildRet builderRef1 $ LLVM.constInt LLVM.int32Type 0 0
+  _ <- lift $ LLVM.buildRetVoid builderRef1
 
   return ()
 
 compileEventEquation :: C ()
 compileEventEquation = do
-  functionRef1 <- getFunctionRef "hydra_event_equation"
+  functionRef1 <- getFunctionRef "hydra_residual_event"
   modify $ \c -> c {functionRef = functionRef1}
 
   compileBasicBlockEntry
 
-  hydraNVDataRef <- getFunctionRef "hydra_nv_data"
-  yVecRef1  <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 1]
-  ypVecRef1 <- compileFunctionCallValueRef hydraNVDataRef [LLVM.getParam functionRef1 2]
-
-
   let params1 = Params { tRef     = LLVM.getParam functionRef1 0
-                       , yVecRef  = yVecRef1
-                       , ypVecRef = ypVecRef1
+                       , yVecRef  = LLVM.getParam functionRef1 1
+                       , ypVecRef = LLVM.getParam functionRef1 2
                        , rVecRef  = LLVM.getParam functionRef1 3
                        }
   modify $ \c -> c {params = params1}
@@ -163,50 +155,14 @@ compileEventEquation = do
   evs1 <- return . events . symtab =<< get
 
   compileEvents $ map snd
-                $ List.sort -- $ List.sortBy (\e1 e2 -> compare (fst e1) (fst e2))
+                $ List.sort
                 $ map (\(e1,(i1,_)) -> (i1,e1))
                 $ Map.assocs evs1
 
   builderRef1 <- return . builderRef =<< get
-  _ <- lift $ LLVM.buildRet builderRef1 $ LLVM.constInt LLVM.int32Type 0 0
+  _ <- lift $ LLVM.buildRetVoid builderRef1
 
   return ()
-
-compileSigs :: [Signal Double] -> C ()
-compileSigs es = mapM_ (uncurry go) $ zip [0 .. ] $ listPartition 10 $ zip [0 .. ] es
-  where
-  go :: Int -> [(Int,Signal Double)] -> C ()
-  go i ies = do
-    context <- get
-    case params context of
-      Params tRef1 yVecRef1 ypVecRef1 rVecRef1 -> do
-        let functionName = "hydra_equation_" ++ show i
-        compileFunctionDeclaration LLVM.voidType functionName [LLVM.doubleType, nVectorType, nVectorType, nVectorType]
-
-        functionRef1 <- getFunctionRef functionName
-        modify $ \c -> c {functionRef = functionRef1}
-
-        let params1 = Params { tRef     = LLVM.getParam functionRef1 0
-                             , yVecRef  = LLVM.getParam functionRef1 1
-                             , ypVecRef = LLVM.getParam functionRef1 2
-                             , rVecRef  = LLVM.getParam functionRef1 3
-                             }
-        modify $ \c -> c {params = params1}
-
-        compileBasicBlockEntry
-        -- valueRef1 <- compileSig e
-        -- compileSetVectorElement (rVecRef params1) i valueRef1
-        compileSigsAux ies
-
-        builderRef1 <- return . builderRef =<< get
-        _ <- lift $ LLVM.buildRetVoid builderRef1
-
-        put context
-        builderRef2 <- return . builderRef =<< get
-        basicBlockRef2 <- return . basicBlockRef =<< get
-        lift $ LLVM.positionAtEnd builderRef2 basicBlockRef2
-        _ <- compileFunctionCallValueRef functionRef1 [tRef1, yVecRef1, ypVecRef1, rVecRef1]
-        return ()
 
 compileSigsAux :: [(Int,Signal Double)] -> C ()
 compileSigsAux es = mapM_ (uncurry go)  es
@@ -327,7 +283,7 @@ compileSig e = do
     App1 Acosh e1    -> compileFunctionCall "acosh" [e1]
     App1 Atanh e1    -> compileFunctionCall "atanh" [e1]
     App1 Abs   e1    -> compileFunctionCall "fabs"  [e1]
-    App1 Sgn   e1    -> compileFunctionCall "hydra_sgn" [e1]
+    App1 Sgn   e1    -> compileFunctionCall "hydra_signum" [e1]
 
     Der _   -> $impossible
     Cur _   -> $impossible

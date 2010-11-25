@@ -17,10 +17,6 @@ plot "plot.dat" using 1:2 with lines, \
      "plot.dat" using 1:19 with lines, \
      "plot.dat" using 1:20 with lines
 
-#plot "plot.dat" using 1:30 with lines, \
-#     "plot.dat" using 1:32 with lines
-#     "plot.dat" using 1:7 with lines 
-
 # set terminal postscript color
 # set output "plot.ps"
 # replot

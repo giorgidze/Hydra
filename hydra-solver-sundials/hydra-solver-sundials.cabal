@@ -1,0 +1,24 @@
+Name:                hydra-solver-sundials
+Version:             0.1
+Synopsis:            Sundials based solver for Hydra
+License:             BSD3
+License-file:        LICENSE
+Author:              George Giorgidze
+Maintainer:          giorgidze@gmail.com
+Category:            Math
+Build-type:          Simple
+-- Extra-source-files:
+Cabal-version:       >= 1.2
+
+
+Library
+  Hs-Source-Dirs: src
+  GHC-Options: -Wall -O3
+  CC-Options: -Wall -O3
+  Extra-Libraries: sundials_nvecserial, sundials_ida
+  C-Sources: src/Hydra/Solver/sundials.c
+
+  Build-depends: base >= 4, Hydra
+  Exposed-modules: Hydra.Solver.Sundials
+  -- Other-modules:
+  -- Build-tools:

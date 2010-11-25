@@ -2,8 +2,6 @@
 
 module Hydra.Stages.Simulate (simulate) where
 
-import Hydra.FFI.Sundials.NVec
-
 import Hydra.Data
 import Hydra.Stages.BuildNewToOld
 import Hydra.Stages.HandleEvents
@@ -11,91 +9,92 @@ import Hydra.Stages.BuildEvents
 import Hydra.Stages.Flatten
 import Hydra.Stages.Validate
 import qualified Hydra.Stages.JIT as JIT (compile)
-import qualified Hydra.Stages.DAE as DAE
 
-import qualified Data.Array.Unboxed as Array
-import Data.Array.Unboxed (UArray)
 import qualified Data.Map as Map
-import System.IO (hFlush,stdout)
+import Data.Map (Map)
+
+import Foreign
+import Foreign.C.Types
+
 
 simulate :: Experiment -> SR () -> IO ()
 simulate exper sr = case sr of
-  SigRel f1 -> simulateAux exper (empty{model = f1 (Unit ())})
-  Switch sr1 _ _ -> simulate exper sr1
+  SigRel f1 -> simulateAux exper (empty{model = f1 Unit})
+  sr1       -> simulate exper (SigRel (\_ -> [App sr1 Unit]))
 
 simulateAux :: Experiment -> SymTab -> IO ()
-simulateAux exper symtab = do
-  let symtab1 = validate $ flatten
-                         $ buildEvents
-                         $ handleEvents
-                         $ buildNewToOld
-                         $ symtab
+simulateAux exper symbolTable = do
+  let symtab = validate $ flatten
+                        $ buildEvents
+                        $ handleEvents
+                        $ buildNewToOld
+                        $ symbolTable
 
-  let nVar     = variableNumber     symtab1
-  let nVarEv   = eventNumber        symtab1
+  let nVar     = variableNumber symtab
+  let nVarEv   = eventNumber    symtab
 
-  (cleanup, equation_ptr,event_equation_ptr) <- JIT.compile exper symtab1
+  (llvmCleanup, residualInit, residualMain, residualEvent) <- JIT.compile exper symtab
 
-  y   <- nvCreate nVar
-  nvConstant y 0.0
-  yp  <- nvCreate nVar
-  nvConstant yp 0.0
-  idv <- nvCreate nVar
-  nvConstant idv 0.0
+  y   <- newArray (replicate nVar 0)
+  yp  <- newArray (replicate nVar 0)
+  idv <- newArray (replicate nVar 0)
+  ev  <- newArray (replicate nVarEv 0)
+  tp  <- new 0
+  initialiseVectors symtab y idv
 
-  initialiseVectors symtab1 y idv
-  
-  zeroCrossingHack y
-  solver <- DAE.createSolver equation_ptr (timeStart exper) (timeStop exper) y yp idv nVarEv event_equation_ptr
+  handle <- (createSolver (solver exper)) (realToFrac (timeStart exper))
+                                          (realToFrac (timeStop exper))
+                                          tp
+                                          (fromIntegral nVar) y yp idv
+                                          (fromIntegral nVarEv) ev
+                                          residualInit residualMain residualEvent
 
-  let loop :: Bool -> Double -> IO ()
-      loop firstCall t1 = do
-        (t2,y2,r) <- solver t1
-        case r of
-          Nothing -> do
-            printSolution symtab1 t2 y2
-            loop False (t2 + timeStep exper)
-          Just [] -> do
-            printSolution symtab1 t2 y2
-          Just _ | firstCall -> do
-            printSolution symtab1 t2 y2
-            loop False (t2 + timeStep exper)
-          Just evs1 -> do -- zeroCrossingHack y
-                          -- zeroCrossingHack yp
-                          instants1     <- nvToMap y
-                          instantsDiff1 <- nvToMap yp
-                          cleanup
-                          let f :: (Int,Bool) -> (Int,Bool)
-                              f (i,_) = if elem i evs1 then (i,True) else (i,False)
-                          let symtabNew = symtab1 {instants = instants1, instantsDiff = instantsDiff1, events = Map.map f (events symtab1)}
-                          simulateAux (exper{timeStart = t2}) (symtabNew{timeCurrent = t2})
 
-  nvToUArray y >>= printSolution symtab1 (timeStart exper)
-  loop True (timeStart exper + timeStep exper)
+  let cleanup :: IO ()
+      cleanup = do llvmCleanup; free y; free yp; free idv; free ev; free tp;
+                   (destroySolver (solver exper)) handle;
 
-initialiseVectors :: SymTab -> NVec -> NVec -> IO ()
-initialiseVectors symtab y idv = mapM_ go (Map.assocs (variables symtab))
+  (visualise exper) (realToFrac (timeStart exper)) (fromIntegral nVar) y
+
+  let loop :: IO ()
+      loop = do
+        ir <- (solve (solver exper)) handle
+        case ir of
+          0 -> do
+            t <- peek tp
+            (visualise exper) t (fromIntegral nVar) y
+            poke tp (t + realToFrac (timeStep exper))
+            loop
+          1 -> do t <- peek tp
+                  instants1     <- ptrToMap nVar y
+                  instantsDiff1 <- ptrToMap nVar yp
+                  ev1 <- peekArray nVarEv ev; print ev1;
+                  (visualise exper) t (fromIntegral nVar) y
+
+                  let f :: (Int,Bool) -> (Int,Bool)
+                      f (i,_) = if (ev1 !! i) /= 0 then (i,True) else (i,False)
+
+                  let symtabNew = symtab { instants = instants1
+                                         , instantsDiff = instantsDiff1
+                                         , events = fmap f (events symtab)
+                                         }
+                  cleanup
+                  simulateAux (exper{timeStart = realToFrac t}) (symtabNew {timeCurrent = realToFrac t})
+          _ -> do
+            t <- peek tp
+            (visualise exper) t (fromIntegral nVar) y
+
+
+  poke tp (realToFrac (timeStart exper + timeStep exper))
+  loop 
+
+initialiseVectors :: SymTab -> Ptr CDouble -> Ptr CInt -> IO ()
+initialiseVectors symtab y idv = mapM_ go $ Map.assocs $ fmap (fmap realToFrac) $ variables symtab
   where
-  go :: (Int,Maybe Double) -> IO ()
+  go :: (Int,Maybe CDouble) -> IO ()
   go (_,Nothing)  = return ()
-  go (i,Just d)   = do nvSet y i d
-                       nvSet idv i 1.0
-
-printSolution :: SymTab -> Double -> UArray Int Double -> IO ()
-printSolution symtab t v = do
-  putStr (show t)
-  let is = if (Map.null (monitors symtab))
-              then (let b = Array.bounds v in [fst b .. snd b])
-              else Map.keys (monitors symtab)
-  mapM_ (\i -> putStr (' ' : show (v  Array.! i))) is
-  putStrLn []
-  hFlush stdout
-
-zeroCrossingHack :: NVec -> IO ()
-zeroCrossingHack v = do
-  n <- nvLength v
-  (flip mapM_) [0 .. (n - 1)] $ \i -> do
-    d <- nvGet v i
-    if abs d < 1.0E-12
-       then nvSet v i 0
-       else return ()
+  go (i,Just d)   = do pokeElemOff y   i d
+                       pokeElemOff idv i 1
+                       
+ptrToMap :: (Storable a, Real a, Fractional b) => Int -> Ptr a -> IO (Map Int b)
+ptrToMap i v = peekArray i v >>= return . Map.fromList . zip [0..] . map realToFrac

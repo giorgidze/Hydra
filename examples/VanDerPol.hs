@@ -3,6 +3,7 @@
 module Main where
 
 import Hydra
+import Hydra.Solver.Sundials
 
 vanDerPol :: Double -> SR ()
 vanDerPol lambda = [$rel| () ->
@@ -15,4 +16,4 @@ vanDerPol lambda = [$rel| () ->
 
 main :: IO ()
 main = do
-  simulate defaultExperiment (vanDerPol 3)
+  simulate experimentDefault{solver = sundials} (vanDerPol 3)

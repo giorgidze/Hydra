@@ -3,6 +3,7 @@
 module Main where
 
 import Hydra
+import Hydra.Solver.Sundials
 
 type Flange  = (Double,Double) -- (Angle, flow Torque)
 type Engine  = SR Flange
@@ -14,7 +15,7 @@ type State = (Double,Double) -- (Angle, Angular Velocity)
 type Machine  = SR Flange
 
 engine1 :: Double -> Engine
-engine1 meanTau = [$rel| (phi, flow tau) ->
+engine1 meanTau = [$rel| (_phi, flow tau) ->
     tau = $meanTau$
 |]
 
@@ -74,6 +75,4 @@ mainSR = [$rel| () ->
 |]
 
 main :: IO ()
-main = do
-  simulate defaultExperiment mainSR
-  return ()
+main = simulate experimentDefault{solver = sundials} mainSR

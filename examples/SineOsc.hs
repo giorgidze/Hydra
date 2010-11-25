@@ -3,6 +3,7 @@
 module Main where
 
 import Hydra
+import Hydra.Solver.Sundials
 
 sineOsc :: SR ()
 sineOsc = [$rel| () ->
@@ -11,8 +12,5 @@ sineOsc = [$rel| () ->
 |]
 
 main :: IO ()
-main = do
-  -- simulate defaultExperiment{execEngine = Interpreter} sineOsc
-  simulate defaultExperiment sineOsc
-  return ()
+main = simulate experimentDefault{solver = sundials} sineOsc
 

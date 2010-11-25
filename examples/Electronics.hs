@@ -3,6 +3,7 @@
 module Electronics where
 
 import Hydra
+import Hydra.Solver.Sundials
 
 type Pin = (Double,Double)
 type Time = Double
@@ -415,6 +416,4 @@ simpleCircuit2 = [$rel| () ->
 --   $ \s5 ->         circuitN 1194 s5
 
 main :: IO ()
-main = do
-  simulate defaultExperiment halfWaveRectifierWithCapacitorAndInductor
-  return ()
+main = simulate experimentDefault{solver = sundials} halfWaveRectifierWithCapacitorAndInductor

@@ -60,7 +60,7 @@ _.           BExpr3  ::= BExpr4 ;
 comment "--" ;
 comment "{-" "-}" ;
 
-token LIdent (lower (letter | digit | '_')*) ;
+token LIdent ((lower | '_') (letter | digit | '_')*) ;
 token HsExpr ('$' (char - '$')* '$') ;
 
 -- layout toplevel ;

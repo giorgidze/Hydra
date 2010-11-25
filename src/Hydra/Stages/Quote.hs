@@ -39,7 +39,7 @@ quotePattern :: BNFC.Pattern -> TH.PatQ
 quotePattern pat = case pat of
   BNFC.PatternWild -> TH.wildP
   BNFC.PatternName _ (BNFC.LIdent s1) -> TH.varP (TH.mkName s1)
-  BNFC.PatternTuple [] -> TH.conP (TH.mkName "Unit") [TH.conP (TH.mkName "()") []]
+  BNFC.PatternTuple [] -> TH.conP (TH.mkName "Unit") []
   BNFC.PatternTuple [pat1] -> quotePattern pat1
   BNFC.PatternTuple pats -> TH.conP (TH.mkName ("Tuple" ++ show (length pats))) (map quotePattern pats)
 
@@ -79,7 +79,7 @@ quoteExpr e = case e of
 
   BNFC.ExprInt i1  -> [| Const (fromIntegral (i1 :: Integer)) |]
   BNFC.ExprReal d1 -> [| Const $(TH.litE (TH.rationalL (toRational d1))) |]
-  BNFC.ExprTuple [] -> [| Unit () |]
+  BNFC.ExprTuple [] -> [| Unit |]
   BNFC.ExprTuple [e1] -> quoteExpr e1
   BNFC.ExprTuple (e1 : e2 : es) -> foldl TH.appE (TH.conE (TH.mkName ("Tuple" ++ show (length es + 2)))) ((quoteExpr e1) : (quoteExpr e2) : (map quoteExpr es))
 
