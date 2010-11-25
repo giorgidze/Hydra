@@ -1,8 +1,6 @@
 Short Term
 -----------
 
-Inline the code for vector getters and setters.
-
 
 Medium Term
 -----------
@@ -13,10 +11,6 @@ currently used numerical methods.
 
 Impulses can be introduced in addition to events to avoid a complete code
 regeneration in some cases.
-
-
-Sometimes KINSOL fails when provided initial guess is 0. As a temporary
-solution initial guess of 0.1 is used.
 
 
 Provide proper documentation.
