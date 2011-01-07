@@ -15,16 +15,12 @@ hydraHooks = simpleUserHooks {
   , preClean = (\args flags -> hydraPreClean >> (preClean simpleUserHooks) args flags)
   }
 
-
 hydraPreConf :: IO ()
 hydraPreConf = do
   let clang = simpleProgram "clang"
   let llvm_as = simpleProgram "llvm-as"
 
   conf <- configureAllKnownPrograms silent (addKnownPrograms [clang,llvm_as] defaultProgramConfiguration)
-
-  -- requireProgram verbose clang AnyVersion conf
-  -- requireProgram verbose llvm_as AnyVersion conf
 
   let arch = map toLower (show buildArch)
 

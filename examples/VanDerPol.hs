@@ -6,12 +6,12 @@ import Hydra
 import Hydra.Solver.Sundials
 
 vanDerPol :: Double -> SR ()
-vanDerPol lambda = [$rel| () ->
+vanDerPol lambda = [rel| () ->
     local x y
     init x = 1
     init y = 1
     y = der x
-    der y = - x + $lambda$ * (1 - x * x) * y;
+    der y =  - x + $lambda$ * (1 - x * x) * y;
 |]
 
 main :: IO ()

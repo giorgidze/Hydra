@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-missing-fields #-}
 
 module Hydra.Stages.Quote (rel,fun) where
 
@@ -14,10 +15,10 @@ import qualified Language.Haskell.TH.Quote as QQ (QuasiQuoter(..))
 import qualified Language.Haskell.TH as TH
 
 rel  :: QQ.QuasiQuoter
-rel  =  QQ.QuasiQuoter quoteSigRel (error "Pattern matching on signal relations is not supported")
+rel  =  QQ.QuasiQuoter { QQ.quoteExp = quoteSigRel}
 
 fun  :: QQ.QuasiQuoter
-fun  =  QQ.QuasiQuoter quoteSigFun (error "Pattern matching on signal functions is not supported")
+fun  =  QQ.QuasiQuoter {QQ.quoteExp = quoteSigFun}
 
 quoteSigRel :: String -> TH.ExpQ
 quoteSigRel s = do

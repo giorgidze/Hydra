@@ -1,8 +1,5 @@
 {-# OPTIONS -w #-}
 {-# LANGUAGE CPP,MagicHash #-}
-#if __GLASGOW_HASKELL__ >= 700
-{-# OPTIONS_GHC -fno-warn-lazy-unlifted-bindings #-}
-#endif
 {-# LINE 3 "LexHydra.x" #-}
 
 {-# OPTIONS -fno-warn-incomplete-patterns #-}

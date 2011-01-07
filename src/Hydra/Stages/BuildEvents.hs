@@ -16,7 +16,7 @@ buildEvs i acc (eq : eqs) = case eq of
       let acc1 = acc {events = Map.insert (sf1 s1) (eventNumber acc,False) (events acc)}
       in  buildEvs i acc1 ((App sr1 s1) : eqs)
 
-  Local f1  -> buildEvs (i + 1) acc (f1 (Var i) ++ eqs)
+  Local f1   -> buildEvs (i + 1) acc (f1 (Var i) ++ eqs)
   Equal  _ _ -> buildEvs i acc eqs
   Init   _ _ -> buildEvs i acc eqs
   Reinit _ _ -> buildEvs i acc eqs
