@@ -13,28 +13,21 @@ g :: Double
 g = 9.81
 
 freeFall :: Body -> SR Body
-freeFall ((x0,y0),(vx0,vy0)) = [rel| ((x,y),(vx,vy)) ->
+freeFall ((x0,y0),(vx0,vy0)) = [$rel| ((x,y),(vx,vy)) ->
     init (x,y)  = ($x0$,$y0$)
     init (vx,vy) = ($vx0$,$vy0$)
-
-    reinit (x,y)   = (cur x ,cur y)
-    reinit (vx,vy) = (cur vx,cur vy)
 
     (der x,der y) = (vx,vy)
     (der vx,der vy) = (0.0, - $g$)
 |]
 
 pendulum :: Double -> Double -> SR Body
-pendulum l phi0 = [rel| ((x,y),(vx,vy)) ->
+pendulum l phi0 = [$rel| ((x,y),(vx,vy)) ->
     local phi phid
 
     init phi  = $phi0$
     init phid = 0
     init (x,y) = ($l$ * sin $phi0$, - $l$ * cos $phi0$)
-
-    reinit phi  = cur phi
-    reinit phid = cur phid
-    reinit (x,y) = (cur x,cur y)
 
     phid = der phi
 
@@ -45,10 +38,10 @@ pendulum l phi0 = [rel| ((x,y),(vx,vy)) ->
 |]
 
 breakingPendulum :: Double -> Double -> Double -> SR Body
-breakingPendulum t l phi0 = switch (pendulum l phi0) [fun| ((_,_),(_,_)) -> time > $t$ |] freeFall
+breakingPendulum t l phi0 = switch (pendulum l phi0) [$fun| ((_,_),(_,_)) -> time > $t$ |] freeFall
 
 mainSR :: SR ()
-mainSR = [rel| () ->
+mainSR = [$rel| () ->
     local x y vx vy
     $breakingPendulum 5 1 (pi / 4)$ <> ((x,y),(vx,vy))
 |]

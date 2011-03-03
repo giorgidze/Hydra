@@ -26,7 +26,6 @@ data Equation =
   | Init    !(Signal Double) !(Signal Double)
   | Reinit  !(Signal Double) !(Signal Double)
   | forall a. (SignalType a) => App !(SR a) !(Signal a)
-  | Monitor !(Signal Double)
 
 switch :: SR a -> SF a Bool -> (a -> SR a) -> SR a
 switch = Switch

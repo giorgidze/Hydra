@@ -34,7 +34,7 @@ quoteSigFun s = do
   let pos =  (TH.loc_filename loc, fst (TH.loc_start loc), snd (TH.loc_start loc))
   sf <- parseSigFun pos s
   case sf of
-    BNFC.SigFun pat1 be1 -> [| SigFun $(TH.lamE [quotePattern pat1] (quoteBExpr be1)) |]
+    BNFC.SigFun pat1 be1 -> [| SigFun $(TH.lamE [quotePattern pat1] (quoteExpr be1)) |]
 
 quotePattern :: BNFC.Pattern -> TH.PatQ
 quotePattern pat = case pat of
@@ -53,8 +53,6 @@ quoteEquations (eq : eqs) = case eq of
 
   BNFC.EquationEqual  e1 e2 -> [| (Equal  $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
   BNFC.EquationInit   e1 e2 -> [| (Init   $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
-  BNFC.EquationReinit e1 e2 -> [| (Reinit $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
-  BNFC.EquationMonitor (BNFC.LIdent s1) -> [| (Monitor $(TH.varE (TH.mkName s1))) : $(quoteEquations eqs) |]
 
   BNFC.EquationLocal (BNFC.LIdent s1) [] -> [| [Local ( $(TH.lamE [TH.varP (TH.mkName s1)] (quoteEquations eqs)) )] |]
 
@@ -68,8 +66,12 @@ quoteExpr e = case e of
     Left s2 -> fail s2
     Right e1 -> [| Const $(return e1) |]
 
-  BNFC.ExprVar (BNFC.LIdent "time") -> [| Time |]
-  BNFC.ExprVar (BNFC.LIdent s1) -> TH.varE (TH.mkName s1)
+  BNFC.ExprVar (BNFC.LIdent "time")  -> [| Time |]
+  BNFC.ExprVar (BNFC.LIdent "not")   -> [| Hydra.Data.not    |]
+  BNFC.ExprVar (BNFC.LIdent "true")  -> [| Comp Gt (Const 1) |]
+  BNFC.ExprVar (BNFC.LIdent "false") -> [| Comp Lt (Const 1) |]  
+  BNFC.ExprVar (BNFC.LIdent s1)      -> TH.varE (TH.mkName s1)
+
   BNFC.ExprAdd e1 e2 -> [| $(quoteExpr e1) +  $(quoteExpr e2) |]
   BNFC.ExprSub e1 e2 -> [| $(quoteExpr e1) -  $(quoteExpr e2) |]
   BNFC.ExprDiv e1 e2 -> [| $(quoteExpr e1) /  $(quoteExpr e2) |]
@@ -84,14 +86,9 @@ quoteExpr e = case e of
   BNFC.ExprTuple [e1] -> quoteExpr e1
   BNFC.ExprTuple (e1 : e2 : es) -> foldl TH.appE (TH.conE (TH.mkName ("Tuple" ++ show (length es + 2)))) ((quoteExpr e1) : (quoteExpr e2) : (map quoteExpr es))
 
-quoteBExpr :: BNFC.BExpr -> TH.ExpQ
-quoteBExpr be = case be of
-  BNFC.BExprOr  be1 be2 -> [| Or   $(quoteBExpr be1) $(quoteBExpr be2) |]
-  BNFC.BExprAnd be1 be2 -> [| And  $(quoteBExpr be1) $(quoteBExpr be2) |]
-  BNFC.BExprLt  e1  e2  -> [| Comp Lt  ($(quoteExpr  e1) - $(quoteExpr e2)) |]
-  BNFC.BExprLte e1  e2  -> [| Comp Lte ($(quoteExpr  e1) - $(quoteExpr e2)) |]
-  BNFC.BExprGt  e1  e2  -> [| Comp Gt  ($(quoteExpr  e1) - $(quoteExpr e2)) |]
-  BNFC.BExprGte e1  e2  -> [| Comp Gte ($(quoteExpr  e1) - $(quoteExpr e2)) |]
-  BNFC.BExprNot be1     -> [| Hydra.Data.not $(quoteBExpr be1) |]
-  BNFC.BExprTrue        -> [| Comp Gt (Const 1) |]
-  BNFC.BExprFalse       -> [| Comp Lt (Const 1) |]
+  BNFC.ExprOr  be1 be2 -> [| Or   $(quoteExpr be1) $(quoteExpr be2) |]
+  BNFC.ExprAnd be1 be2 -> [| And  $(quoteExpr be1) $(quoteExpr be2) |]
+  BNFC.ExprLt  e1  e2  -> [| Comp Lt  ($(quoteExpr  e1) - $(quoteExpr e2)) |]
+  BNFC.ExprLte e1  e2  -> [| Comp Lte ($(quoteExpr  e1) - $(quoteExpr e2)) |]
+  BNFC.ExprGt  e1  e2  -> [| Comp Gt  ($(quoteExpr  e1) - $(quoteExpr e2)) |]
+  BNFC.ExprGte e1  e2  -> [| Comp Gte ($(quoteExpr  e1) - $(quoteExpr e2)) |]

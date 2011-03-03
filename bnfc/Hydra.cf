@@ -2,7 +2,7 @@ entrypoints SigRel, SigFun;
 
 SigRel. SigRel ::= Pattern "->" "{" [Equation] "}" ;
 
-SigFun. SigFun ::= Pattern "->" "{" BExpr "}" ;
+SigFun. SigFun ::= Pattern "->" "{" Expr "}" ;
 
 PatternWild.     Pattern ::= "_" ;
 PatternName.     Pattern ::= PatternNameQual LIdent ;
@@ -14,48 +14,40 @@ PatternNameQualFlow.   PatternNameQual ::= "flow" ;
 
 EquationEqual.       Equation ::= Expr "=" Expr ;
 EquationInit.        Equation ::= "init"   Expr "=" Expr ;
-EquationReinit.      Equation ::= "reinit" Expr "=" Expr ;
 EquationLocal.       Equation ::= "local" LIdent [LIdent];
 EquationConnect.     Equation ::= "connect" LIdent LIdent [LIdent] ;
 EquationConnectFlow. Equation ::= "connect" "flow" LIdent LIdent [LIdent] ;
-EquationMonitor.     Equation ::= "monitor" LIdent ;
 EquationSigRelApp.   Equation ::= HsExpr "<>" Expr ;
 separator            Equation ";" ;
 separator            LIdent "" ;
 
-ExprAdd.     Expr1 ::= Expr1 "+" Expr2 ;
-ExprSub.     Expr1 ::= Expr1 "-" Expr2 ;
-ExprDiv.     Expr2 ::= Expr2 "/" Expr3 ;
-ExprMul.     Expr2 ::= Expr2 "*" Expr3 ;
-ExprPow.     Expr3 ::= Expr3 "^" Expr4 ;
-ExprNeg.     Expr3 ::= "-" Expr4 ;
-ExprApp.     Expr4 ::= Expr4 Expr5 ;
-ExprVar.     Expr5 ::= LIdent ;
-ExprAnti.    Expr5 ::= HsExpr ;
-ExprInt.     Expr5 ::= Integer ;
-ExprReal.    Expr5 ::= Double ;
-ExprTuple.   Expr5 ::= "(" [Expr] ")" ; 
+ExprOr.      Expr1 ::= Expr1 "||" Expr2 ;
+ExprAnd.     Expr2 ::= Expr2 "&&" Expr3 ;
+ExprLt.      Expr3 ::= Expr4 "<"  Expr4 ;
+ExprLte.     Expr3 ::= Expr4 "<=" Expr4 ;
+ExprGt.      Expr3 ::= Expr4 ">"  Expr4 ;
+ExprGte.     Expr3 ::= Expr4 ">=" Expr4 ;
+ExprAdd.     Expr4 ::= Expr4 "+" Expr5 ;
+ExprSub.     Expr4 ::= Expr4 "-" Expr5 ;
+ExprDiv.     Expr5 ::= Expr5 "/" Expr6 ;
+ExprMul.     Expr5 ::= Expr5 "*" Expr6 ;
+ExprPow.     Expr6 ::= Expr6 "^" Expr7 ;
+ExprNeg.     Expr6 ::= "-" Expr7 ;
+ExprApp.     Expr7 ::= Expr7 Expr8 ;
+ExprVar.     Expr8 ::= LIdent ;
+ExprAnti.    Expr8 ::= HsExpr ;
+ExprInt.     Expr8 ::= Integer ;
+ExprReal.    Expr8 ::= Double ;
+ExprTuple.   Expr8 ::= "(" [Expr] ")" ; 
 _.           Expr  ::= Expr1 ;
 _.           Expr1 ::= Expr2 ;
 _.           Expr2 ::= Expr3 ;
 _.           Expr3 ::= Expr4 ;
 _.           Expr4 ::= Expr5 ;
+_.           Expr5 ::= Expr6 ;
+_.           Expr6 ::= Expr7 ;
+_.           Expr7 ::= Expr8 ;
 separator    Expr "," ;
-
-BExprOr.     BExpr1 ::= BExpr1 "||" BExpr2 ;
-BExprAnd.    BExpr2 ::= BExpr2 "&&" BExpr3 ;
-BExprLt.     BExpr3 ::= Expr "<"  Expr ;
-BExprLte.    BExpr3 ::= Expr "<=" Expr ;
-BExprGt.     BExpr3 ::= Expr ">"  Expr ;
-BExprGte.    BExpr3 ::= Expr ">=" Expr ;
-BExprNot.    BExpr3 ::= "not" BExpr4 ;
-BExprTrue.   BExpr4 ::= "True" ;
-BExprFalse.  BExpr4 ::= "False" ;
-_.           BExpr4 ::= "(" BExpr ")" ;
-_.           BExpr   ::= BExpr1 ;
-_.           BExpr1  ::= BExpr2 ;
-_.           BExpr2  ::= BExpr3 ;
-_.           BExpr3  ::= BExpr4 ;
 
 comment "--" ;
 comment "{-" "-}" ;

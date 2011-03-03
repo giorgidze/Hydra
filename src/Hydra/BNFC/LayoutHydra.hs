@@ -203,20 +203,15 @@ sToken p s = PT p (TS s i)
       "=" -> 14
       ">" -> 15
       ">=" -> 16
-      "False" -> 17
-      "True" -> 18
-      "^" -> 19
-      "_" -> 20
-      "connect" -> 21
-      "flow" -> 22
-      "init" -> 23
-      "local" -> 24
-      "monitor" -> 25
-      "not" -> 26
-      "reinit" -> 27
-      "{" -> 28
-      "||" -> 29
-      "}" -> 30
+      "^" -> 17
+      "_" -> 18
+      "connect" -> 19
+      "flow" -> 20
+      "init" -> 21
+      "local" -> 22
+      "{" -> 23
+      "||" -> 24
+      "}" -> 25
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

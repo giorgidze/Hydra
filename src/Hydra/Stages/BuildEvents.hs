@@ -20,4 +20,3 @@ buildEvs i acc (eq : eqs) = case eq of
   Equal  _ _ -> buildEvs i acc eqs
   Init   _ _ -> buildEvs i acc eqs
   Reinit _ _ -> buildEvs i acc eqs
-  Monitor _  -> buildEvs i acc eqs

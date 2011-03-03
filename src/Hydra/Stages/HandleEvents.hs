@@ -28,4 +28,3 @@ handleEvs st evs (eq : eqs) = case eq of
   Equal  _ _  ->            eq : handleEvs st evs eqs
   Init   _ _  ->                 handleEvs st evs eqs
   Reinit v e  -> Init v e : eq : handleEvs st evs eqs
-  Monitor _   ->            eq : handleEvs st evs eqs

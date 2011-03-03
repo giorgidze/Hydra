@@ -1,13 +1,52 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-
 module Hydra.Stages.Desugar (desugar) where
 
 import Hydra.BNFC.AbsHydra
 import Hydra.Utils.Impossible (impossible)
 
 desugar :: SigRel -> SigRel
-desugar = desugarFlowSigRel . desugarConnectSigRel
+desugar = desugarFlowSigRel . desugarConnectSigRel . desugarTupleSigRel . desugarLocalSigRel
+
+
+desugarLocalSigRel :: SigRel -> SigRel
+desugarLocalSigRel sr = case sr of
+  SigRel pat1 eqs1 -> SigRel pat1 (concatMap desugarLocalEquation eqs1)
+
+desugarLocalEquation :: Equation -> [Equation]
+desugarLocalEquation eq = case eq of
+  EquationSigRelApp _ _ -> [eq]
+  EquationEqual _ _ -> [eq]
+  EquationInit _ _ -> [eq]
+  EquationConnect _ _ _ -> [eq]
+  EquationConnectFlow _ _ _ -> [eq]
+  EquationLocal _ [] -> [eq]
+  EquationLocal li1 (li2 : lis) ->
+    (EquationLocal li1 []) : desugarLocalEquation (EquationLocal li2 lis)
+
+
+desugarTupleSigRel :: SigRel -> SigRel
+desugarTupleSigRel sr = case sr of
+  SigRel pat1 eqs1 -> SigRel pat1 (concatMap desugarTupleEquation eqs1)
+
+desugarTupleEquation :: Equation -> [Equation]
+desugarTupleEquation eq = case eq of
+  EquationSigRelApp _ _ -> [eq]
+  EquationConnect _ _ _ -> [eq]
+  EquationConnectFlow _ _ _ -> [eq]
+  EquationLocal _ _ -> [eq]
+
+  EquationEqual (ExprTuple es1) (ExprTuple es2) ->
+    if length es1 == length es2
+      then concatMap desugarTupleEquation (zipWith EquationEqual es1 es2)
+      else error ("Types do not agree in equation: " ++ show eq)
+  EquationEqual _ _ -> [eq]
+
+  EquationInit (ExprTuple es1) (ExprTuple es2) ->
+    if length es1 == length es2
+      then concatMap desugarTupleEquation (zipWith EquationInit es1 es2)
+      else error ("Types do not agree in equation: " ++ show eq)
+  EquationInit _ _ -> [eq]
 
 desugarConnectSigRel :: SigRel -> SigRel
 desugarConnectSigRel sr = case sr of
@@ -15,28 +54,10 @@ desugarConnectSigRel sr = case sr of
 
 desugarConnectEquation :: Equation -> [Equation]
 desugarConnectEquation eq = case eq of
-  EquationSigRelApp hsExpr1 e1 -> [EquationSigRelApp  hsExpr1 e1]
-
-  EquationEqual (ExprTuple es1) (ExprTuple es2) ->
-    if length es1 == length es2
-      then concatMap desugarConnectEquation (zipWith EquationEqual es1 es2)
-      else error ("Types do not agree in equation: " ++ show eq)
+  EquationSigRelApp _ _ -> [eq]
   EquationEqual _ _ -> [eq]
-
-  EquationInit (ExprTuple es1) (ExprTuple es2) ->
-    if length es1 == length es2
-      then concatMap desugarConnectEquation (zipWith EquationInit es1 es2)
-      else error ("Types do not agree in equation: " ++ show eq)
   EquationInit _ _ -> [eq]
-
-  EquationReinit (ExprTuple es1) (ExprTuple es2) ->
-    if length es1 == length es2
-      then concatMap desugarConnectEquation (zipWith EquationReinit es1 es2)
-      else error ("Types do not agree in equation: " ++ show eq)
-  EquationReinit _ _ -> [eq]
-
-  EquationLocal _ [] -> [eq]
-  EquationLocal li1 (li2 : lis) -> (EquationLocal li1 []) : desugarConnectEquation (EquationLocal li2 lis)
+  EquationLocal _ _ -> [eq]
 
   EquationConnect li1 li2 lis ->
     let vs = map ExprVar (li1 : li2 : lis)
@@ -45,14 +66,13 @@ desugarConnectEquation eq = case eq of
     let vs = map ExprVar (li1 : li2 : lis)
     in  [EquationEqual  (foldr1 (\e1 e2 -> ExprAdd e1 e2) vs) (ExprReal 0.0)]
 
-  EquationMonitor _ -> [eq]
 
 desugarFlowSigRel :: SigRel -> SigRel
 desugarFlowSigRel (SigRel pat1 eqs1) =
   let flowVars = desugarFlowFindPattern pat1
       pat2 = desugarFlowForgetPattern pat1
       eqs2 = foldr (\s eqs -> desugarFlowEquations s eqs) eqs1 flowVars
-  in  SigRel pat2 eqs2 
+  in  SigRel pat2 eqs2
 
 desugarFlowFindPattern :: Pattern -> [String]
 desugarFlowFindPattern pat = case pat of
@@ -74,15 +94,19 @@ desugarFlowEquations s (eq : eqs) =
   let go :: Expr -> Expr
       go = desugarFlowExpr s
   in  case eq of
-        EquationSigRelApp hsExpr1 e1 -> (EquationSigRelApp hsExpr1 (go e1)) : desugarFlowEquations s eqs
-        EquationEqual e1 e2          -> (EquationEqual (go e1) (go e2))     : desugarFlowEquations s eqs
-        EquationInit e1 e2           -> (EquationInit (go e1) (go e2))      : desugarFlowEquations s eqs
-        EquationReinit e1 e2         -> (EquationReinit (go e1) (go e2))    : desugarFlowEquations s eqs
-        EquationLocal (LIdent s1) [] -> if s1 == s then (eq : eqs) else  eq : desugarFlowEquations s eqs
+        EquationSigRelApp hsExpr1 e1 ->
+          (EquationSigRelApp hsExpr1 (go e1)) : desugarFlowEquations s eqs
+        EquationEqual e1 e2          ->
+          (EquationEqual (go e1) (go e2))     : desugarFlowEquations s eqs
+        EquationInit e1 e2           ->
+          (EquationInit (go e1) (go e2))      : desugarFlowEquations s eqs
+        EquationLocal (LIdent s1) [] ->
+          if s1 == s
+             then (eq : eqs)
+             else  eq : desugarFlowEquations s eqs
         EquationLocal _ _ -> $impossible
         EquationConnect _ _ _ -> $impossible
         EquationConnectFlow _ _ _ -> $impossible
-        EquationMonitor _ -> eq : desugarFlowEquations s eqs
 
 desugarFlowExpr :: String -> Expr -> Expr
 desugarFlowExpr s expr = go expr
@@ -96,6 +120,12 @@ desugarFlowExpr s expr = go expr
     ExprDiv e1 e2 -> ExprDiv (go e1) (go e2)
     ExprMul e1 e2 -> ExprMul (go e1) (go e2)
     ExprPow e1 e2 -> ExprPow (go e1) (go e2)
+    ExprOr  e1 e2 -> ExprOr  (go e1) (go e2)
+    ExprAnd e1 e2 -> ExprAnd (go e1) (go e2)
+    ExprLt  e1 e2 -> ExprLt  (go e1) (go e2)
+    ExprLte e1 e2 -> ExprLte (go e1) (go e2)
+    ExprGt  e1 e2 -> ExprGt  (go e1) (go e2)
+    ExprGte e1 e2 -> ExprGte (go e1) (go e2)
     ExprApp v1 e1 -> ExprApp v1 (go e1)
     ExprNeg e1    -> ExprNeg (go e1)
 

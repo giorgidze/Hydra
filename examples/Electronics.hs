@@ -24,7 +24,6 @@ resistor r = [$rel| ((flow p_i, p_v), (flow n_i, n_v)) ->
 inductor :: Double -> SR (Pin,Pin)
 inductor l = [$rel| ((flow p_i, p_v), (flow n_i, n_v)) ->
     local u
-    reinit p_i = cur p_i
     $twoPin$ <> ((p_i, p_v), (n_i, n_v), u)
     $l$ * (der p_i) = u
 |]
@@ -33,7 +32,6 @@ iInductor :: Double -> Double -> SR (Pin,Pin)
 iInductor i0 l = [$rel| ((flow p_i, p_v), (flow n_i, n_v)) ->
     local u
     init p_i = $i0$
-    reinit p_i = cur p_i
     $twoPin$ <> ((p_i, p_v), (n_i, n_v), u)
     $l$ * (der p_i) = u
 |]
@@ -41,7 +39,6 @@ iInductor i0 l = [$rel| ((flow p_i, p_v), (flow n_i, n_v)) ->
 capacitor :: Double -> SR (Pin,Pin)
 capacitor c = [$rel| ((flow p_i, p_v), (flow n_i, n_v)) ->
     local u
-    reinit u = cur u
     $twoPin$ <> ((p_i, p_v), (n_i, n_v), u)
     $c$ * (der u) = p_i
 |]
@@ -50,7 +47,6 @@ iCapacitor :: Double -> Double -> SR (Pin,Pin)
 iCapacitor u0 c = [$rel| ((flow p_i, p_v), (flow n_i, n_v)) ->
     local u
     init u = $u0$
-    reinit u = cur u
     $twoPin$ <> ((p_i, p_v), (n_i, n_v), u)
     $c$ * (der u) = p_i
 |]

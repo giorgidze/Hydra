@@ -22,7 +22,6 @@ flatten symtab = go (symtab{equations=[],variables = Map.empty}) (flattenEqs 0 (
                                       in  go (acc1 {variables = Map.insert i (Just (eval acc1 e2)) (variables acc1)}) eqs
   go acc ((Init (App2 Mul (Const (-1)) e1) e2) : eqs) = go acc ((Init e1 (negate (simplify e2))) : eqs)
   go _   ((Init _ _) : _)           = error "This version of Hydra only supports directed (i.e., caulal) init and reinit equations."
-  go acc ((Monitor (Var i)) : eqs) = go (acc {monitors = Map.insert i () (monitors acc)}) eqs
   go _   _                         = $impossible
 
 flattenEqs :: Int -> [Equation] -> [Equation]
@@ -35,7 +34,6 @@ flattenEqs i (eq : eqs) = case eq of
   Equal   _  _ -> eq : flattenEqs i eqs
   Init    _  _ -> eq : flattenEqs i eqs
   Reinit  _  _ ->      flattenEqs i eqs
-  Monitor _    -> eq : flattenEqs i eqs
 
 buildVars :: SymTab -> Signal Double -> SymTab
 buildVars acc e = case e of

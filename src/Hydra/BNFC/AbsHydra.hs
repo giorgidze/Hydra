@@ -11,7 +11,7 @@ data SigRel =
   deriving (Eq,Ord,Show)
 
 data SigFun =
-   SigFun Pattern BExpr
+   SigFun Pattern Expr
   deriving (Eq,Ord,Show)
 
 data Pattern =
@@ -28,16 +28,20 @@ data PatternNameQual =
 data Equation =
    EquationEqual Expr Expr
  | EquationInit Expr Expr
- | EquationReinit Expr Expr
  | EquationLocal LIdent [LIdent]
  | EquationConnect LIdent LIdent [LIdent]
  | EquationConnectFlow LIdent LIdent [LIdent]
- | EquationMonitor LIdent
  | EquationSigRelApp HsExpr Expr
   deriving (Eq,Ord,Show)
 
 data Expr =
-   ExprAdd Expr Expr
+   ExprOr Expr Expr
+ | ExprAnd Expr Expr
+ | ExprLt Expr Expr
+ | ExprLte Expr Expr
+ | ExprGt Expr Expr
+ | ExprGte Expr Expr
+ | ExprAdd Expr Expr
  | ExprSub Expr Expr
  | ExprDiv Expr Expr
  | ExprMul Expr Expr
@@ -49,17 +53,5 @@ data Expr =
  | ExprInt Integer
  | ExprReal Double
  | ExprTuple [Expr]
-  deriving (Eq,Ord,Show)
-
-data BExpr =
-   BExprOr BExpr BExpr
- | BExprAnd BExpr BExpr
- | BExprLt Expr Expr
- | BExprLte Expr Expr
- | BExprGt Expr Expr
- | BExprGte Expr Expr
- | BExprNot BExpr
- | BExprTrue
- | BExprFalse
   deriving (Eq,Ord,Show)
 

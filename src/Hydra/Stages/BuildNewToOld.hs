@@ -35,4 +35,3 @@ ntoEqs incNew new incOld old acc (eq : eqs) = case eq of
   Equal  _ _ -> ntoEqs incNew new incOld old acc eqs
   Init   _ _ -> ntoEqs incNew new incOld old acc eqs
   Reinit _ _ -> ntoEqs incNew new incOld old acc eqs
-  Monitor _  -> ntoEqs incNew new incOld old acc eqs
