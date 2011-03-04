@@ -154,23 +154,23 @@ instance Fractional (Signal Double) where
   fromRational r = Const (fromRational r)
 
 instance Floating (Signal Double) where
-  pi = Const pi
-  exp   e1 = App1 Exp   e1
-  log   e1 = App1 Log   e1
-  sqrt  e1 = App1 Sqrt  e1
-  sin   e1 = App1 Sin   e1
-  cos   e1 = App1 Cos   e1
-  tan   e1 = App1 Tan   e1
-  asin  e1 = App1 Asin  e1
-  acos  e1 = App1 Acos  e1
-  atan  e1 = App1 Atan  e1
-  sinh  e1 = App1 Sinh  e1
-  cosh  e1 = App1 Cosh  e1
-  tanh  e1 = App1 Tanh  e1
-  asinh e1 = App1 Asinh e1
-  acosh e1 = App1 Acosh e1
-  atanh e1 = App1 Atanh e1
-  (**) e1 e2 = App2 Pow e1 e2
+  pi          = Const pi
+  exp   e1    = App1 Exp   e1
+  log   e1    = App1 Log   e1
+  sqrt  e1    = App1 Sqrt  e1
+  sin   e1    = App1 Sin   e1
+  cos   e1    = App1 Cos   e1
+  tan   e1    = App1 Tan   e1
+  asin  e1    = App1 Asin  e1
+  acos  e1    = App1 Acos  e1
+  atan  e1    = App1 Atan  e1
+  sinh  e1    = App1 Sinh  e1
+  cosh  e1    = App1 Cosh  e1
+  tanh  e1    = App1 Tanh  e1
+  asinh e1    = App1 Asinh e1
+  acosh e1    = App1 Acosh e1
+  atanh e1    = App1 Atanh e1
+  (**) e1 e2  = App2 Pow e1 e2
 
 isVar :: Signal Double -> Bool
 isVar (Var _) = True
@@ -178,11 +178,11 @@ isVar _       = False
 
 isConst :: Signal Double -> Bool
 isConst (Const _) = True
-isConst _          = False
+isConst _         = False
 
 isConstZero :: Signal Double -> Bool
 isConstZero (Const 0) = True
-isConstZero _            = False
+isConstZero _         = False
 
 data SymTab = SymTab {
     model         :: [Equation]
