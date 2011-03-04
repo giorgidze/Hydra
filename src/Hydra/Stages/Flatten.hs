@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, GADTs #-}
 
 module Hydra.Stages.Flatten (flatten) where
 
@@ -33,7 +33,6 @@ flattenEqs i (eq : eqs) = case eq of
   Local f1     -> flattenEqs (i + 1) (f1 (Var i) ++ eqs)
   Equal   _  _ -> eq : flattenEqs i eqs
   Init    _  _ -> eq : flattenEqs i eqs
-  Reinit  _  _ ->      flattenEqs i eqs
 
 buildVars :: SymTab -> Signal Double -> SymTab
 buildVars acc e = case e of
@@ -46,7 +45,6 @@ buildVars acc e = case e of
                      Nothing -> acc{variables = Map.insert i1 (Just 0) (variables acc)}
                      Just _  -> acc
   Der  _        -> error "This version of Hydra only supports first order derivatives."
-  Cur  e1       -> buildVars acc e1
   App1 _ e1     -> buildVars acc e1
   App2  _ e1 e2 -> buildVars (buildVars acc e1) e2
 
@@ -56,7 +54,6 @@ evalCurs st e = case e of
   Const _ -> e
   Var   _ -> e
   Der   _ -> e
-  Cur   e1 -> Const (eval st e1)
   App1  f1 e1 -> App1 f1 (evalCurs st e1)
   App2  f1 e1 e2 -> App2 f1 (evalCurs st e1) (evalCurs st e2)
  
@@ -69,7 +66,6 @@ simplify e = case e of
   Der   (Var _) -> e
   Der (App2 Mul (Const (-1)) e1) -> negate (simplify (Der e1))
   Der _ -> error "This version of Hydra only supports first order derivatives."
-  Cur   e1 -> Cur (simplify e1)
   App1  f1 e1 -> App1 f1 (simplify e1)
   App2  f1 e1 e2 -> App2 f1 (simplify e1) (simplify e2)
 

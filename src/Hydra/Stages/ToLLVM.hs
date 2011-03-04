@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, GADTs #-}
 
 module Hydra.Stages.ToLLVM (compile) where
 
@@ -15,7 +15,6 @@ import qualified Foreign as FFI
 import qualified Foreign.C.String as FFI
 
 import Control.Monad.State.Strict
-import qualified Data.Map  as Map
 import qualified Data.List as List
 
 type C a = StateT Context IO a
@@ -155,9 +154,9 @@ compileEventEquation = do
   evs1 <- return . events . symtab =<< get
 
   compileEvents $ map snd
-                $ List.sort
+                $ List.sortBy (\a b -> compare (fst a) (fst b))
                 $ map (\(e1,(i1,_)) -> (i1,e1))
-                $ Map.assocs evs1
+                $ evs1
 
   builderRef1 <- return . builderRef =<< get
   _ <- lift $ LLVM.buildRetVoid builderRef1
@@ -286,8 +285,6 @@ compileSig e = do
     App1 Sgn   e1    -> compileFunctionCall "hydra_signum" [e1]
 
     Der _   -> $impossible
-    Cur _   -> $impossible
-
 
 compileFunctionCall :: String -> [Signal Double] -> C LLVM.ValueRef
 compileFunctionCall s es = do

@@ -4,7 +4,8 @@ module Hydra.Stages.BuildNewToOld (buildNewToOld) where
 
 import Hydra.Data
 
-import qualified Data.Map as Map
+import qualified Data.List as List
+import qualified Data.Map  as Map
 
 buildNewToOld :: SymTab -> SymTab
 buildNewToOld st = case ntoEqs True 0 True 0 st (model st) of
@@ -24,7 +25,7 @@ ntoEqs incNew new incOld old acc (eq : eqs) = case eq of
   App (SigRel f1) s1 -> ntoEqs incNew new incOld old acc (f1 s1 ++ eqs)
 
   App (Switch sr1 (SigFun sf1) f2) s1 -> if incOld
-    then case Map.lookup (sf1 s1) (events acc) of
+    then case List.lookup (sf1 s1) (events acc) of
            Nothing        -> ntoEqs incNew new incOld old acc ((App sr1 s1) : eqs)
            Just (_,False) -> ntoEqs incNew new incOld old acc ((App sr1 s1) : eqs)
            Just (_,True)  -> let (acc1,new1,old1) = ntoEqs False new  True  old  acc  [App sr1 s1]
@@ -34,4 +35,3 @@ ntoEqs incNew new incOld old acc (eq : eqs) = case eq of
 
   Equal  _ _ -> ntoEqs incNew new incOld old acc eqs
   Init   _ _ -> ntoEqs incNew new incOld old acc eqs
-  Reinit _ _ -> ntoEqs incNew new incOld old acc eqs

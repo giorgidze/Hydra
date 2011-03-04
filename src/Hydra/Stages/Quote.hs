@@ -72,12 +72,12 @@ quoteExpr e = case e of
   BNFC.ExprVar (BNFC.LIdent "false") -> [| Comp Lt (Const 1) |]  
   BNFC.ExprVar (BNFC.LIdent s1)      -> TH.varE (TH.mkName s1)
 
-  BNFC.ExprAdd e1 e2 -> [| $(quoteExpr e1) +  $(quoteExpr e2) |]
-  BNFC.ExprSub e1 e2 -> [| $(quoteExpr e1) -  $(quoteExpr e2) |]
-  BNFC.ExprDiv e1 e2 -> [| $(quoteExpr e1) /  $(quoteExpr e2) |]
-  BNFC.ExprMul e1 e2 -> [| $(quoteExpr e1) *  $(quoteExpr e2) |]
-  BNFC.ExprPow e1 e2 -> [| $(quoteExpr e1) ** $(quoteExpr e2) |]
-  BNFC.ExprNeg e1 -> [| negate $(quoteExpr e1) |]
+  BNFC.ExprAdd e1 e2 -> [| $(quoteExpr e1) +  $(quoteExpr e2) :: Signal Double |]
+  BNFC.ExprSub e1 e2 -> [| $(quoteExpr e1) -  $(quoteExpr e2) :: Signal Double |]
+  BNFC.ExprDiv e1 e2 -> [| $(quoteExpr e1) /  $(quoteExpr e2) :: Signal Double |]
+  BNFC.ExprMul e1 e2 -> [| $(quoteExpr e1) *  $(quoteExpr e2) :: Signal Double |]
+  BNFC.ExprPow e1 e2 -> [| $(quoteExpr e1) ** $(quoteExpr e2) :: Signal Double |]
+  BNFC.ExprNeg e1 -> [| negate $(quoteExpr e1) :: Signal Double |]
   BNFC.ExprApp e1 e2 -> TH.appE (quoteExpr e1) (quoteExpr e2)
 
   BNFC.ExprInt i1  -> [| Const (fromIntegral (i1 :: Integer)) |]

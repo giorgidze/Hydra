@@ -71,8 +71,7 @@ simulateAux exper symbolTable = do
                   ev1 <- peekArray nVarEv ev; print ev1;
                   (visualise exper) t (fromIntegral nVar) y
 
-                  let f :: (Int,Bool) -> (Int,Bool)
-                      f (i,_) = if (ev1 !! i) /= 0 then (i,True) else (i,False)
+                  let f (sb,(i,_)) = if (ev1 !! i) /= 0 then (sb,(i,True)) else (sb,(i,False))
 
                   let symtabNew = symtab { instants = instants1
                                          , instantsDiff = instantsDiff1
