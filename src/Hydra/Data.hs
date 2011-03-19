@@ -28,18 +28,20 @@ data Equation where
   App   :: SR a -> Signal a -> Equation
 
 data Signal a where
-  Unit  :: Signal ()
-  Time  :: Signal Double
-  Const :: Double -> Signal Double
-  Var   :: Int -> Signal Double
-  Der   :: Signal Double -> Signal Double
-  App1  :: Func1 -> Signal Double -> Signal Double
-  App2  :: Func2 -> Signal Double -> Signal Double -> Signal Double
-  Or    :: Signal Bool -> Signal Bool -> Signal Bool
-  And   :: Signal Bool -> Signal Bool -> Signal Bool
-  Xor   :: Signal Bool -> Signal Bool -> Signal Bool
-  Comp  :: CompFun -> Signal Double -> Signal Bool
-  Pair  :: Signal a -> Signal b -> Signal (a,b)
+  Unit   :: Signal ()
+  Time   :: Signal Double
+  Const  :: Double -> Signal Double
+  Var    :: Int -> Signal Double
+  Der    :: Signal Double -> Signal Double
+  App1   :: Func1 -> Signal Double -> Signal Double
+  App2   :: Func2 -> Signal Double -> Signal Double -> Signal Double
+  Or     :: Signal Bool -> Signal Bool -> Signal Bool
+  And    :: Signal Bool -> Signal Bool -> Signal Bool
+  Xor    :: Signal Bool -> Signal Bool -> Signal Bool
+  Comp   :: CompFun -> Signal Double -> Signal Bool
+  Tuple2 :: Signal a -> Signal b -> Signal (a,b)
+  Tuple3 :: Signal a -> Signal b -> Signal c -> Signal (a,b,c)
+  Tuple4 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal (a,b,c,d)
 
 deriving instance Eq   (Signal a)
 deriving instance Show (Signal a)
@@ -103,7 +105,9 @@ eval st e = case e of
                        then  Prelude.not (eval st e2)
                        else (eval st e2)
   Comp  f1 e1    -> (evalCompFun f1) (eval st e1)
-  Pair a1 a2     -> (eval st a1,eval st a2)
+  Tuple2 a1 a2   -> (eval st a1,eval st a2)
+  Tuple3 a1 a2 a3 -> (eval st a1,eval st a2,eval st a3)
+  Tuple4 a1 a2 a3 a4 -> (eval st a1,eval st a2,eval st a3,eval st a4)
 
 evalFunc1 :: Func1 -> (Double -> Double)
 evalFunc1 f = case f of

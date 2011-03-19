@@ -9,7 +9,7 @@ import Hydra.Data
 import Hydra.Stages.Parse (parseSigRel,parseSigFun)
 import Hydra.Stages.Desugar (desugar)
 
-import Language.Haskell.SyntaxTrees.ExtsToTH (parseToTH)
+import Language.Haskell.Meta (parseExp)
 
 import qualified Language.Haskell.TH.Quote as QQ (QuasiQuoter(..))
 import qualified Language.Haskell.TH as TH
@@ -47,8 +47,8 @@ quotePattern pat = case pat of
 quoteEquations :: [BNFC.Equation] -> TH.ExpQ
 quoteEquations [] = [| [] |]
 quoteEquations (eq : eqs) = case eq of
-  BNFC.EquationSigRelApp (BNFC.HsExpr s1) e1 -> case parseToTH (init (tail s1)) of
-    Left s2 -> fail s2
+  BNFC.EquationSigRelApp (BNFC.HsExpr s1) e1 -> case parseExp (init (tail s1)) of
+    Left s2   -> fail s2
     Right sr1 -> [| (App  $(return sr1) $(quoteExpr e1)) : $(quoteEquations eqs) |]
 
   BNFC.EquationEqual  e1 e2 -> [| (Equal  $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
@@ -62,8 +62,8 @@ quoteEquations (eq : eqs) = case eq of
 
 quoteExpr :: BNFC.Expr -> TH.ExpQ
 quoteExpr e = case e of
-  BNFC.ExprAnti (BNFC.HsExpr s1) -> case parseToTH (init (tail s1)) of
-    Left s2 -> fail s2
+  BNFC.ExprAnti (BNFC.HsExpr s1) -> case parseExp (init (tail s1)) of
+    Left s2  -> fail s2
     Right e1 -> [| Const $(return e1) |]
 
   BNFC.ExprVar (BNFC.LIdent "time")  -> [| Time |]
