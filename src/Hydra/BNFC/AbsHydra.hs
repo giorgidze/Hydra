@@ -15,23 +15,24 @@ data SigFun =
   deriving (Eq,Ord,Show)
 
 data Pattern =
-   PatternWild
- | PatternName PatternNameQual LIdent
- | PatternTuple [Pattern]
+   PatWild
+ | PatName Qualifier LIdent
+ | PatUnit
+ | PatPair Pattern Pattern
   deriving (Eq,Ord,Show)
 
-data PatternNameQual =
-   PatternNameQualEmpty
- | PatternNameQualFlow
+data Qualifier =
+   QualEmpty
+ | QualFlow
   deriving (Eq,Ord,Show)
 
 data Equation =
-   EquationEqual Expr Expr
- | EquationInit Expr Expr
- | EquationLocal LIdent [LIdent]
- | EquationConnect LIdent LIdent [LIdent]
- | EquationConnectFlow LIdent LIdent [LIdent]
- | EquationSigRelApp HsExpr Expr
+   EquEqual Expr Expr
+ | EquInit Expr Expr
+ | EquLocal LIdent [LIdent]
+ | EquConnect LIdent LIdent [LIdent]
+ | EquConnectFlow LIdent LIdent [LIdent]
+ | EquSigRelApp HsExpr Expr
   deriving (Eq,Ord,Show)
 
 data Expr =
@@ -52,6 +53,7 @@ data Expr =
  | ExprAnti HsExpr
  | ExprInt Integer
  | ExprReal Double
- | ExprTuple [Expr]
+ | ExprUnit
+ | ExprPair Expr Expr
   deriving (Eq,Ord,Show)
 

@@ -2,24 +2,22 @@ entrypoints SigRel, SigFun;
 
 SigRel. SigRel ::= Pattern "->" "{" [Equation] "}" ;
 
-SigFun. SigFun ::= Pattern "->" "{" Expr "}" ;
+SigFun. SigFun ::= Pattern "->" "{" Expr       "}" ;
 
-PatternWild.     Pattern ::= "_" ;
-PatternName.     Pattern ::= PatternNameQual LIdent ;
-PatternTuple.    Pattern ::= "(" [Pattern] ")" ;
-separator        Pattern "," ;
+PatWild. Pattern ::= "_" ;
+PatName. Pattern ::= Qualifier LIdent ;
+PatUnit. Pattern ::= "()" ;
+PatPair. Pattern ::= "(" Pattern "," Pattern ")" ;
 
-PatternNameQualEmpty.  PatternNameQual ::= ;
-PatternNameQualFlow.   PatternNameQual ::= "flow" ;
+QualEmpty. Qualifier ::= ;
+QualFlow.  Qualifier ::= "flow" ;
 
-EquationEqual.       Equation ::= Expr "=" Expr ;
-EquationInit.        Equation ::= "init"   Expr "=" Expr ;
-EquationLocal.       Equation ::= "local" LIdent [LIdent];
-EquationConnect.     Equation ::= "connect" LIdent LIdent [LIdent] ;
-EquationConnectFlow. Equation ::= "connect" "flow" LIdent LIdent [LIdent] ;
-EquationSigRelApp.   Equation ::= HsExpr "<>" Expr ;
-separator            Equation ";" ;
-separator            LIdent "" ;
+EquEqual.       Equation ::= Expr "=" Expr ;
+EquInit.        Equation ::= "init" Expr "=" Expr ;
+EquLocal.       Equation ::= "local" LIdent [LIdent];
+EquConnect.     Equation ::= "connect" LIdent LIdent [LIdent] ;
+EquConnectFlow. Equation ::= "connect" "flow" LIdent LIdent [LIdent] ;
+EquSigRelApp.   Equation ::= HsExpr "<>" Expr ;
 
 ExprOr.      Expr1 ::= Expr1 "||" Expr2 ;
 ExprAnd.     Expr2 ::= Expr2 "&&" Expr3 ;
@@ -27,18 +25,19 @@ ExprLt.      Expr3 ::= Expr4 "<"  Expr4 ;
 ExprLte.     Expr3 ::= Expr4 "<=" Expr4 ;
 ExprGt.      Expr3 ::= Expr4 ">"  Expr4 ;
 ExprGte.     Expr3 ::= Expr4 ">=" Expr4 ;
-ExprAdd.     Expr4 ::= Expr4 "+" Expr5 ;
-ExprSub.     Expr4 ::= Expr4 "-" Expr5 ;
-ExprDiv.     Expr5 ::= Expr5 "/" Expr6 ;
-ExprMul.     Expr5 ::= Expr5 "*" Expr6 ;
-ExprPow.     Expr6 ::= Expr6 "^" Expr7 ;
+ExprAdd.     Expr4 ::= Expr4 "+"  Expr5 ;
+ExprSub.     Expr4 ::= Expr4 "-"  Expr5 ;
+ExprDiv.     Expr5 ::= Expr5 "/"  Expr6 ;
+ExprMul.     Expr5 ::= Expr5 "*"  Expr6 ;
+ExprPow.     Expr6 ::= Expr6 "^"  Expr7 ;
 ExprNeg.     Expr6 ::= "-" Expr7 ;
 ExprApp.     Expr7 ::= Expr7 Expr8 ;
 ExprVar.     Expr8 ::= LIdent ;
 ExprAnti.    Expr8 ::= HsExpr ;
 ExprInt.     Expr8 ::= Integer ;
 ExprReal.    Expr8 ::= Double ;
-ExprTuple.   Expr8 ::= "(" [Expr] ")" ; 
+ExprUnit.    Expr8 ::= "()" ;
+ExprPair.    Expr8 ::= "(" Expr "," Expr ")" ; 
 _.           Expr  ::= Expr1 ;
 _.           Expr1 ::= Expr2 ;
 _.           Expr2 ::= Expr3 ;
@@ -47,7 +46,10 @@ _.           Expr4 ::= Expr5 ;
 _.           Expr5 ::= Expr6 ;
 _.           Expr6 ::= Expr7 ;
 _.           Expr7 ::= Expr8 ;
-separator    Expr "," ;
+_.           Expr8 ::= "(" Expr ")" ;
+
+separator Equation ";" ;
+separator LIdent "" ;
 
 comment "--" ;
 comment "{-" "-}" ;
@@ -55,6 +57,4 @@ comment "{-" "-}" ;
 token LIdent ((lower | '_') (letter | digit | '_')*) ;
 token HsExpr ('$' (char - '$')* '$') ;
 
--- layout toplevel ;
 layout "->" ;
--- layout stop "in"

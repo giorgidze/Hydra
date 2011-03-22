@@ -19,8 +19,8 @@ import Foreign.C.Types
 
 simulate :: Experiment -> SR () -> IO ()
 simulate exper sr = case sr of
-  SigRel f1 -> simulateAux exper (empty{model = f1 Unit})
-  sr1       -> simulate exper (SigRel (\_ -> [App sr1 Unit]))
+  SR f1 -> simulateAux exper (empty{model = f1 Unit})
+  sr1   -> simulate exper (SR (\_ -> [App sr1 Unit]))
 
 simulateAux :: Experiment -> SymTab -> IO ()
 simulateAux exper symbolTable = do

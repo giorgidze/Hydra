@@ -22,9 +22,9 @@ ntoEqs incNew new incOld old acc (eq : eqs) = case eq of
         old1 = if incOld then old + 1 else old
     in  ntoEqs incNew new1 incOld old1 acc1 ((f1 (Var old)) ++ eqs)
 
-  App (SigRel f1) s1 -> ntoEqs incNew new incOld old acc (f1 s1 ++ eqs)
+  App (SR f1) s1 -> ntoEqs incNew new incOld old acc (f1 s1 ++ eqs)
 
-  App (Switch sr1 (SigFun sf1) f2) s1 -> if incOld
+  App (Switch sr1 (SF sf1) f2) s1 -> if incOld
     then case List.lookup (sf1 s1) (events acc) of
            Nothing        -> ntoEqs incNew new incOld old acc ((App sr1 s1) : eqs)
            Just (_,False) -> ntoEqs incNew new incOld old acc ((App sr1 s1) : eqs)

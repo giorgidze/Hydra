@@ -15,11 +15,11 @@ import Foreign
 import Foreign.C.Types
 
 data SR a where
-  SigRel :: (Signal a -> [Equation]) -> SR a
+  SR     :: (Signal a -> [Equation]) -> SR a
   Switch :: SR a -> SF a Bool -> (a -> SR a) -> SR a
 
 data SF a b where
-  SigFun :: (Signal a -> Signal b) -> SF a b
+  SF     :: (Signal a -> Signal b) -> SF a b
 
 data Equation where
   Local :: (Signal Double -> [Equation]) -> Equation
@@ -28,89 +28,75 @@ data Equation where
   App   :: SR a -> Signal a -> Equation
 
 data Signal a where
-  Unit   :: Signal ()
-  Time   :: Signal Double
-  Const  :: Double -> Signal Double
-  Var    :: Int -> Signal Double
-  Der    :: Signal Double -> Signal Double
-  App1   :: Func1 -> Signal Double -> Signal Double
-  App2   :: Func2 -> Signal Double -> Signal Double -> Signal Double
-  Or     :: Signal Bool -> Signal Bool -> Signal Bool
-  And    :: Signal Bool -> Signal Bool -> Signal Bool
-  Xor    :: Signal Bool -> Signal Bool -> Signal Bool
-  Comp   :: CompFun -> Signal Double -> Signal Bool
-  Tuple2 :: Signal a -> Signal b -> Signal (a,b)
-  Tuple3 :: Signal a -> Signal b -> Signal c -> Signal (a,b,c)
-  Tuple4 :: Signal a -> Signal b -> Signal c -> Signal d -> Signal (a,b,c,d)
+  Unit    :: Signal ()
+  Time    :: Signal Double
+  Const   :: (Show a) => a -> Signal a
+  Pair    :: (Show a, Show b) => Signal a -> Signal b -> Signal (a,b)
+  PrimApp :: (Show a, Show b) => PrimSF a b -> Signal a -> Signal b
+  Var     :: Int -> Signal Double
 
-deriving instance Eq   (Signal a)
-deriving instance Show (Signal a)
+instance Eq (Signal a) where
+  a == b = (show a == show b)
 
-data Func1 =
-    Exp
-  | Sqrt
-  | Log
-  | Sin
-  | Tan
-  | Cos
-  | Asin
-  | Atan
-  | Acos
-  | Sinh
-  | Tanh
-  | Cosh
-  | Asinh
-  | Atanh
-  | Acosh
-  | Abs
-  | Sgn
-  deriving (Eq,Ord,Show)
+instance Show (Signal a) where
+  show Unit = "Unit"
+  show Time = "Time"
+  show (Const a) = "Const (" ++ show a ++ ")"
+  show (Pair a b) = "Pair (" ++ show a ++ ") (" ++ show b ++ ")"
+  show (PrimApp sf s) = "PrimApp (" ++ show sf ++ ") (" ++ show s ++ ")"
+  show (Var i) = "Var (" ++ show i ++ ")"
 
-data Func2 =
-    Add
-  | Mul
-  | Div
-  | Pow
-  deriving (Eq,Ord,Show)
+data PrimSF a b where
+  Der    :: PrimSF Double Double
+  Or     :: PrimSF (Bool,Bool) Bool
+  And    :: PrimSF (Bool,Bool) Bool
+  Xor    :: PrimSF (Bool,Bool) Bool
+  Lt     :: PrimSF Double Bool
+  Lte    :: PrimSF Double Bool
+  Gt     :: PrimSF Double Bool
+  Gte    :: PrimSF Double Bool
+  Exp    :: PrimSF Double Double
+  Sqrt   :: PrimSF Double Double
+  Log    :: PrimSF Double Double
+  Sin    :: PrimSF Double Double
+  Tan    :: PrimSF Double Double
+  Cos    :: PrimSF Double Double
+  Asin   :: PrimSF Double Double
+  Atan   :: PrimSF Double Double
+  Acos   :: PrimSF Double Double
+  Sinh   :: PrimSF Double Double
+  Tanh   :: PrimSF Double Double
+  Cosh   :: PrimSF Double Double
+  Asinh  :: PrimSF Double Double
+  Atanh  :: PrimSF Double Double
+  Acosh  :: PrimSF Double Double
+  Abs    :: PrimSF Double Double
+  Sgn    :: PrimSF Double Double
+  Add    :: PrimSF (Double,Double) Double
+  Mul    :: PrimSF (Double,Double) Double
+  Div    :: PrimSF (Double,Double) Double
+  Pow    :: PrimSF (Double,Double) Double
 
-data CompFun =
-    Lt
-  | Lte
-  | Gt
-  | Gte
-  deriving (Eq,Ord,Show) 
+deriving instance Eq   (PrimSF a b)
+deriving instance Show (PrimSF a b)
+
 
 switch :: SR a -> SF a Bool -> (a -> SR a) -> SR a
 switch = Switch
 
-der :: Signal Double -> Signal Double
-der = Der
-
-not :: Signal Bool -> Signal Bool
-not = Xor (Comp Gt (Const 1))
-
 eval :: SymTab -> Signal a -> a
 eval st e = case e of
-  Unit           -> ()
-  Time           -> timeCurrent st
-  Const d1       -> d1
-  Var   i1       -> Map.findWithDefault $impossible i1 (instants st)
-  Der   (Var i1) -> Map.findWithDefault $impossible i1 (instantsDiff st)
-  Der   _        -> error "This version of Hydra only supports first order derivatives."
-  App1  f1 e1    -> (evalFunc1 f1) (eval st e1)
-  App2  f2 e1 e2 -> (evalFunc2 f2) (eval st e1) (eval st e2)
-  Or  e1 e2      -> (eval st e1) || (eval st e2) 
-  And e1 e2      -> (eval st e1) && (eval st e2) 
-  Xor e1 e2      -> if (eval st e1)
-                       then  Prelude.not (eval st e2)
-                       else (eval st e2)
-  Comp  f1 e1    -> (evalCompFun f1) (eval st e1)
-  Tuple2 a1 a2   -> (eval st a1,eval st a2)
-  Tuple3 a1 a2 a3 -> (eval st a1,eval st a2,eval st a3)
-  Tuple4 a1 a2 a3 a4 -> (eval st a1,eval st a2,eval st a3,eval st a4)
+  Unit                 -> ()
+  Time                 -> timeCurrent st
+  Const c              -> c
+  Var   i1             -> Map.findWithDefault $impossible i1 (instants st)
+  Pair a1 a2           -> (eval st a1,eval st a2)
+  PrimApp Der (Var i1) -> Map.findWithDefault $impossible i1 (instantsDiff st)
+  PrimApp Der _        -> error "This version of Hydra only supports first order derivatives."
+  PrimApp sf1 e1       -> (evalPrimSF sf1) (eval st e1)
 
-evalFunc1 :: Func1 -> (Double -> Double)
-evalFunc1 f = case f of
+evalPrimSF :: PrimSF a b -> (a -> b)
+evalPrimSF sf = case sf of
   Exp   -> exp
   Sqrt  -> sqrt
   Log   -> log
@@ -128,53 +114,51 @@ evalFunc1 f = case f of
   Acosh -> acosh
   Abs   -> abs
   Sgn   -> signum
-
-evalFunc2 :: Func2 -> (Double -> Double -> Double)
-evalFunc2 f = case f of
-  Add -> (+)
-  Mul -> (*)
-  Div -> (/)
-  Pow -> (**)
-
-evalCompFun :: CompFun -> (Double -> Bool)
-evalCompFun scf d = case scf of
-  Lt  -> (d <  0)
-  Lte -> (d <= 0)
-  Gt  -> (d >  0) 
-  Gte -> (d >= 0)
+  Add   -> uncurry (+)
+  Mul   -> uncurry (*)
+  Div   -> uncurry (/)
+  Pow   -> uncurry (**)
+  Lt    -> \d -> (d <  0)
+  Lte   -> \d -> (d <= 0)
+  Gt    -> \d -> (d >  0) 
+  Gte   -> \d -> (d >= 0)
+  Or    -> uncurry (||)
+  And   -> uncurry (&&)
+  Xor   -> \(p,q) -> if p then Prelude.not q else q
+  Der   -> $impossible
 
 instance Num (Signal Double) where
-  (+) e1 e2     = App2 Add e1 e2
-  (*) e1 e2     = App2 Mul e1 e2
-  (-) e1 e2     = App2 Add e1 ((Const (-1)) * e2)
+  (+) e1 e2     = PrimApp Add (Pair e1 e2)
+  (*) e1 e2     = PrimApp Mul (Pair e1 e2)
+  (-) e1 e2     = PrimApp Add (Pair e1 ((Const (-1)) * e2))
   negate e1     = (Const (-1)) * e1
-  abs e1        = App1 Abs e1
-  signum e1     = App1 Sgn e1
+  abs e1        = PrimApp Abs e1
+  signum e1     = PrimApp Sgn e1
   fromInteger i = Const (fromIntegral i)
 
 instance Fractional (Signal Double) where
-  (/) e1 e2 = App2 Div e1 e2
+  (/) e1 e2 = PrimApp Div (Pair e1 e2)
   recip e1 = 1 / e1
   fromRational r = Const (fromRational r)
 
 instance Floating (Signal Double) where
   pi          = Const pi
-  exp   e1    = App1 Exp   e1
-  log   e1    = App1 Log   e1
-  sqrt  e1    = App1 Sqrt  e1
-  sin   e1    = App1 Sin   e1
-  cos   e1    = App1 Cos   e1
-  tan   e1    = App1 Tan   e1
-  asin  e1    = App1 Asin  e1
-  acos  e1    = App1 Acos  e1
-  atan  e1    = App1 Atan  e1
-  sinh  e1    = App1 Sinh  e1
-  cosh  e1    = App1 Cosh  e1
-  tanh  e1    = App1 Tanh  e1
-  asinh e1    = App1 Asinh e1
-  acosh e1    = App1 Acosh e1
-  atanh e1    = App1 Atanh e1
-  (**) e1 e2  = App2 Pow e1 e2
+  exp   e1    = PrimApp Exp   e1
+  log   e1    = PrimApp Log   e1
+  sqrt  e1    = PrimApp Sqrt  e1
+  sin   e1    = PrimApp Sin   e1
+  cos   e1    = PrimApp Cos   e1
+  tan   e1    = PrimApp Tan   e1
+  asin  e1    = PrimApp Asin  e1
+  acos  e1    = PrimApp Acos  e1
+  atan  e1    = PrimApp Atan  e1
+  sinh  e1    = PrimApp Sinh  e1
+  cosh  e1    = PrimApp Cosh  e1
+  tanh  e1    = PrimApp Tanh  e1
+  asinh e1    = PrimApp Asinh e1
+  acosh e1    = PrimApp Acosh e1
+  atanh e1    = PrimApp Atanh e1
+  (**) e1 e2  = PrimApp Pow   (Pair e1 e2)
 
 isVar :: Signal Double -> Bool
 isVar (Var _) = True
