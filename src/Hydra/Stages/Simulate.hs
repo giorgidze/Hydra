@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ForeignFunctionInterface #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Hydra.Stages.Simulate (simulate) where
 

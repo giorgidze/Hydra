@@ -241,6 +241,8 @@ compileSigBool sb = case sb of
     let zero = LLVM.constReal LLVM.doubleType 0.0
     lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 5 valueRef1 zero s
 
+  PrimApp _ _ -> $impossible
+
 compileBoolToDouble :: LLVM.ValueRef -> C LLVM.ValueRef
 compileBoolToDouble b = do
   builderRef1 <- return . builderRef =<< get
@@ -299,7 +301,7 @@ compileSig e = do
     PrimApp Abs   e1    -> compileFunctionCall "fabs"  [e1]
     PrimApp Sgn   e1    -> compileFunctionCall "hydra_signum" [e1]
 
-    PrimApp Der _ -> $impossible
+    PrimApp _ _ -> $impossible
 
 compileFunctionCall :: String -> [Signal Double] -> C LLVM.ValueRef
 compileFunctionCall s es = do

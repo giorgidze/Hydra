@@ -15,11 +15,11 @@ import Foreign.C.Types
 
 compile :: Experiment -> SymTab -> IO (IO (), Residual, Residual, Residual)
 compile exper symtab = do
-  moduleRef <- ToLLVM.compile symtab
-  -- LLVM.dumpModule moduleRef
+  modRef <- ToLLVM.compile symtab
+  -- LLVM.dumpModule modRef
   ee <- if jitCompile exper
-           then createJIT moduleRef
-           else createInterpreter moduleRef
+           then createJIT modRef
+           else createInterpreter modRef
 
   jitAllFunctions ee
 

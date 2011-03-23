@@ -63,7 +63,7 @@ runFunction ee s args = do
 destroyGV :: LLVM.GenericValueRef -> IO ()
 destroyGV gv = FFI.newForeignPtr LLVM.ptrDisposeGenericValue gv >>= FFI.finalizeForeignPtr
 
--- Adapted from readBitcodeFromFile in llvm package
+-- Adapted from the readBitcodeFromFile function from the llvm package
 readBitcode :: FilePath -> IO LLVM.ModuleRef
 readBitcode name =
   FFI.withCString name $ \ namePtr ->
