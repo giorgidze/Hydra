@@ -40,7 +40,7 @@ quotePattern :: BNFC.Pattern -> TH.PatQ
 quotePattern pat = case pat of
   BNFC.PatWild -> TH.wildP
   BNFC.PatUnit -> TH.conP (TH.mkName "Unit") []
-  BNFC.PatName _ (BNFC.LIdent s1) -> TH.varP (TH.mkName s1)
+  BNFC.PatName _ (BNFC.Ident s1) -> TH.varP (TH.mkName s1)
   BNFC.PatPair pat1 pat2 -> TH.conP (TH.mkName "Pair") [quotePattern pat1, quotePattern pat2]
 
 quoteEquations :: [BNFC.Equation] -> TH.ExpQ
@@ -53,7 +53,7 @@ quoteEquations (eq : eqs) = case eq of
   BNFC.EquEqual  e1 e2 -> [| (Equal  $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
   BNFC.EquInit   e1 e2 -> [| (Init   $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
 
-  BNFC.EquLocal (BNFC.LIdent s1) [] -> [| [Local ( $(TH.lamE [TH.varP (TH.mkName s1)] (quoteEquations eqs)) )] |]
+  BNFC.EquLocal (BNFC.Ident s1) [] -> [| [Local ( $(TH.lamE [TH.varP (TH.mkName s1)] (quoteEquations eqs)) )] |]
 
   BNFC.EquLocal       _ _   -> $impossible
   BNFC.EquConnect     _ _ _ -> $impossible
@@ -65,12 +65,12 @@ quoteExpr e = case e of
     Left s2  -> fail s2
     Right e1 -> [| Const $(return e1) |]
 
-  BNFC.ExprVar (BNFC.LIdent "time")  -> [| Time |]
-  BNFC.ExprVar (BNFC.LIdent "not")   -> [| \s -> PrimApp Xor (Pair (Const True) s) |]
-  BNFC.ExprVar (BNFC.LIdent "der")   -> [| PrimApp Der |]
-  BNFC.ExprVar (BNFC.LIdent "true")  -> [| Const True |]
-  BNFC.ExprVar (BNFC.LIdent "false") -> [| Const False |]  
-  BNFC.ExprVar (BNFC.LIdent s1)      -> TH.varE (TH.mkName s1)
+  BNFC.ExprVar (BNFC.Ident "time")  -> [| Time |]
+  BNFC.ExprVar (BNFC.Ident "not")   -> [| \s -> PrimApp Xor (Pair (Const True) s) |]
+  BNFC.ExprVar (BNFC.Ident "der")   -> [| PrimApp Der |]
+  BNFC.ExprVar (BNFC.Ident "true")  -> [| Const True |]
+  BNFC.ExprVar (BNFC.Ident "false") -> [| Const False |]  
+  BNFC.ExprVar (BNFC.Ident s1)      -> TH.varE (TH.mkName s1)
 
   BNFC.ExprAdd e1 e2 -> [| $(quoteExpr e1) +  $(quoteExpr e2) :: Signal Double |]
   BNFC.ExprSub e1 e2 -> [| $(quoteExpr e1) -  $(quoteExpr e2) :: Signal Double |]

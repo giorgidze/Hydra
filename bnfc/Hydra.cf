@@ -5,7 +5,7 @@ SigRel. SigRel ::= Pattern "->" "{" [Equation] "}" ;
 SigFun. SigFun ::= Pattern "->" "{" Expr       "}" ;
 
 PatWild. Pattern ::= "_" ;
-PatName. Pattern ::= Qualifier LIdent ;
+PatName. Pattern ::= Qualifier Ident ;
 PatUnit. Pattern ::= "()" ;
 PatPair. Pattern ::= "(" Pattern "," Pattern ")" ;
 
@@ -14,9 +14,9 @@ QualFlow.  Qualifier ::= "flow" ;
 
 EquEqual.       Equation ::= Expr "=" Expr ;
 EquInit.        Equation ::= "init" Expr "=" Expr ;
-EquLocal.       Equation ::= "local" LIdent [LIdent];
-EquConnect.     Equation ::= "connect" LIdent LIdent [LIdent] ;
-EquConnectFlow. Equation ::= "connect" "flow" LIdent LIdent [LIdent] ;
+EquLocal.       Equation ::= "local" Ident [Ident];
+EquConnect.     Equation ::= "connect" Ident Ident [Ident] ;
+EquConnectFlow. Equation ::= "connect" "flow" Ident Ident [Ident] ;
 EquSigRelApp.   Equation ::= HsExpr "<>" Expr ;
 
 ExprOr.      Expr1 ::= Expr1 "||" Expr2 ;
@@ -32,7 +32,7 @@ ExprMul.     Expr5 ::= Expr5 "*"  Expr6 ;
 ExprPow.     Expr6 ::= Expr6 "^"  Expr7 ;
 ExprNeg.     Expr6 ::= "-" Expr7 ;
 ExprApp.     Expr7 ::= Expr7 Expr8 ;
-ExprVar.     Expr8 ::= LIdent ;
+ExprVar.     Expr8 ::= Ident ;
 ExprAnti.    Expr8 ::= HsExpr ;
 ExprInt.     Expr8 ::= Integer ;
 ExprReal.    Expr8 ::= Double ;
@@ -49,12 +49,11 @@ _.           Expr7 ::= Expr8 ;
 _.           Expr8 ::= "(" Expr ")" ;
 
 separator Equation ";" ;
-separator LIdent "" ;
+separator Ident "" ;
 
 comment "--" ;
 comment "{-" "-}" ;
 
-token LIdent ((lower | '_') (letter | digit | '_')*) ;
 token HsExpr ('$' (char - '$')* '$') ;
 
 layout "->" ;

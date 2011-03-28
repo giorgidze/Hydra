@@ -75,7 +75,7 @@ desugarFlowFindPattern pat = case pat of
   PatWild -> []
   PatUnit -> []
   PatName QualEmpty _ -> []
-  PatName QualFlow  (LIdent s1) -> [s1]
+  PatName QualFlow  (Ident s1) -> [s1]
   PatPair pat1 pat2 -> desugarFlowFindPattern pat1 ++ desugarFlowFindPattern pat2
 
 desugarFlowForgetPattern :: Pattern -> Pattern
@@ -98,7 +98,7 @@ desugarFlowEquations s (eq : eqs) =
           (EquEqual (go e1) (go e2))     : desugarFlowEquations s eqs
         EquInit e1 e2           ->
           (EquInit (go e1) (go e2))      : desugarFlowEquations s eqs
-        EquLocal (LIdent s1) [] ->
+        EquLocal (Ident s1) [] ->
           if s1 == s
              then (eq : eqs)
              else  eq : desugarFlowEquations s eqs
@@ -111,7 +111,7 @@ desugarFlowExpr s expr = go expr
   where
   go :: Expr -> Expr
   go e = case e of
-    ExprVar (LIdent s1) -> if s1 == s then ExprNeg e else e
+    ExprVar (Ident s1) -> if s1 == s then ExprNeg e else e
 
     ExprAdd e1 e2 -> ExprAdd (go e1) (go e2)
     ExprSub e1 e2 -> ExprSub (go e1) (go e2)
