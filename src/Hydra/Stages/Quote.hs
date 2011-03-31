@@ -80,10 +80,10 @@ quoteExpr e = case e of
   BNFC.ExprNeg e1 -> [| negate $(quoteExpr e1) :: Signal Double |]
   BNFC.ExprApp e1 e2 -> TH.appE (quoteExpr e1) (quoteExpr e2)
 
-  BNFC.ExprInt i1  -> [| Const ((fromIntegral i1) :: Double) |]
-  BNFC.ExprReal d1 -> [| Const $(TH.litE (TH.rationalL (toRational d1))) |]
-  BNFC.ExprUnit    -> [| Unit |]
-  BNFC.ExprPair e1 e2 -> TH.appE (TH.appE (TH.conE (TH.mkName "Pair")) (quoteExpr e1)) (quoteExpr e2)
+  BNFC.ExprInteger i1  -> [| Const ((fromIntegral i1) :: Double) |]
+  BNFC.ExprDouble d1   -> [| Const $(TH.litE (TH.rationalL (toRational d1))) |]
+  BNFC.ExprUnit        -> [| Unit |]
+  BNFC.ExprPair e1 e2  -> TH.appE (TH.appE (TH.conE (TH.mkName "Pair")) (quoteExpr e1)) (quoteExpr e2)
 
   BNFC.ExprOr  be1 be2 -> [| PrimApp Or  (Pair $(quoteExpr be1) $(quoteExpr be2)) |]
   BNFC.ExprAnd be1 be2 -> [| PrimApp And (Pair $(quoteExpr be1) $(quoteExpr be2)) |]

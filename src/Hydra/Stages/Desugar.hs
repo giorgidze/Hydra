@@ -60,7 +60,7 @@ desugarConnectEquation eq = case eq of
     in  zipWith EquEqual vs (tail vs)
   EquConnectFlow li1 li2 lis ->
     let vs = map ExprVar (li1 : li2 : lis)
-    in  [EquEqual  (foldr1 (\e1 e2 -> ExprAdd e1 e2) vs) (ExprReal 0.0)]
+    in  [EquEqual  (foldr1 (\e1 e2 -> ExprAdd e1 e2) vs) (ExprDouble 0.0)]
 
 
 desugarFlowSigRel :: SigRel -> SigRel
@@ -129,7 +129,7 @@ desugarFlowExpr s expr = go expr
 
     ExprPair e1 e2 -> ExprPair (go e1) (go e2)
 
-    ExprAnti _ -> e
-    ExprInt  _ -> e
-    ExprReal _ -> e
-    ExprUnit   -> e
+    ExprAnti     _ -> e
+    ExprInteger  _ -> e
+    ExprDouble   _ -> e
+    ExprUnit       -> e

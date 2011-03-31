@@ -51,8 +51,8 @@ data Expr =
  | ExprApp Expr Expr
  | ExprVar Ident
  | ExprAnti HsExpr
- | ExprInt Integer
- | ExprReal Double
+ | ExprInteger Integer
+ | ExprDouble Double
  | ExprUnit
  | ExprPair Expr Expr
   deriving (Eq,Ord,Show)

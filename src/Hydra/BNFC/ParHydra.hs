@@ -579,14 +579,14 @@ happyReduce_42 = happySpecReduce_1  16# happyReduction_42
 happyReduction_42 happy_x_1
 	 =  case happyOut6 happy_x_1 of { happy_var_1 -> 
 	happyIn21
-		 (ExprInt happy_var_1
+		 (ExprInteger happy_var_1
 	)}
 
 happyReduce_43 = happySpecReduce_1  16# happyReduction_43
 happyReduction_43 happy_x_1
 	 =  case happyOut7 happy_x_1 of { happy_var_1 -> 
 	happyIn21
-		 (ExprReal happy_var_1
+		 (ExprDouble happy_var_1
 	)}
 
 happyReduce_44 = happySpecReduce_1  16# happyReduction_44
