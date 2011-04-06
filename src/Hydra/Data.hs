@@ -255,11 +255,10 @@ experimentDefault = Experiment {
   
 visualiseDump :: CDouble -> CInt -> Ptr CDouble -> IO ()
 visualiseDump time len arr = do
-  return ()
-  -- putStr (show time)
-  -- putStr " "
-  -- forM_ [0 .. (len - 1)] $ \i -> do
-  --   d <- peekElemOff arr (fromIntegral i);
-  --   putStr (show d)
-  --   putStr " "
-  -- putStrLn []
+  putStr (show time)
+  putStr " "
+  forM_ [0 .. (len - 1)] $ \i -> do
+    d <- peekElemOff arr (fromIntegral i);
+    putStr (show d)
+    putStr " "
+  putStrLn []

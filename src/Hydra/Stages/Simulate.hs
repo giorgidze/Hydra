@@ -65,7 +65,7 @@ simulateAux exper symbolTable = do
           1 -> do t <- peek tp
                   instants1     <- ptrToMap nVar y
                   instantsDiff1 <- ptrToMap nVar yp
-                  ev1 <- peekArray nVarEv ev; print ev1;
+                  ev1 <- peekArray nVarEv ev
                   (visualise exper) t (fromIntegral nVar) y
 
                   let f (sb,(i,_)) = if (ev1 !! i) /= 0 then (sb,(i,True)) else (sb,(i,False))
