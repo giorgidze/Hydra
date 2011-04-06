@@ -177,7 +177,6 @@ data SymTab = SymTab {
   , variables     :: Map Int (Maybe Double)
   , events        :: [(Signal Bool,(Int,Bool))]
   , equations     :: [Signal Double]
-  , newToOld      :: Map Int Int
   , timeCurrent   :: Double
   , instants      :: Map Int Double
   , instantsDiff  :: Map Int Double
@@ -189,7 +188,6 @@ empty = SymTab {
   , variables     = Map.empty
   , events        = []
   , equations     = []
-  , newToOld      = Map.empty
   , timeCurrent   = 0
   , instants      = Map.empty
   , instantsDiff  = Map.empty
@@ -257,10 +255,11 @@ experimentDefault = Experiment {
   
 visualiseDump :: CDouble -> CInt -> Ptr CDouble -> IO ()
 visualiseDump time len arr = do
-  putStr (show time)
-  putStr " "
-  forM_ [0 .. (len - 1)] $ \i -> do
-    d <- peekElemOff arr (fromIntegral i);
-    putStr (show d)
-    putStr " "
-  putStrLn []
+  return ()
+  -- putStr (show time)
+  -- putStr " "
+  -- forM_ [0 .. (len - 1)] $ \i -> do
+  --   d <- peekElemOff arr (fromIntegral i);
+  --   putStr (show d)
+  --   putStr " "
+  -- putStrLn []

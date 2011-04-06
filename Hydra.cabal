@@ -45,7 +45,6 @@ library
     Hydra.Stages.Parse
     Hydra.Stages.Desugar
     Hydra.Stages.Quote
-    Hydra.Stages.BuildNewToOld
     Hydra.Stages.HandleEvents
     Hydra.Stages.BuildEvents
     Hydra.Stages.Flatten

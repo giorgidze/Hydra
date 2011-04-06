@@ -3,7 +3,6 @@
 module Hydra.Stages.Simulate (simulate) where
 
 import Hydra.Data
-import Hydra.Stages.BuildNewToOld
 import Hydra.Stages.HandleEvents
 import Hydra.Stages.BuildEvents
 import Hydra.Stages.Flatten
@@ -16,7 +15,6 @@ import Data.Map (Map)
 import Foreign
 import Foreign.C.Types
 
-
 simulate :: Experiment -> SR () -> IO ()
 simulate exper sr = case sr of
   SR f1 -> simulateAux exper (empty{model = f1 Unit})
@@ -27,7 +25,6 @@ simulateAux exper symbolTable = do
   let symtab = validate $ flatten
                         $ buildEvents
                         $ handleEvents
-                        $ buildNewToOld
                         $ symbolTable
 
   let nVar     = variableNumber symtab
