@@ -7,9 +7,9 @@ import Hydra.Solver.Sundials
 
 functions :: SR ()
 functions = [rel| () ->
-    local x1 x2 x3 x4 x5 x6 x7 x8 x9 x10
-    local x11 x12 x13 x14 x15 x16 x17 x18 x19 x20
-    local x21 x22 x23 x24 x25
+    local x1; local x2; local x3; local x4; local x5; local x6; local x7; local x8; local x9; local x10;
+    local x11; local x12; local x13; local x14; local x15; local x16; local x17; local x18; local x19; local x20;
+    local x21; local x22; local x23; local x24; local x25;
     x1  = 1 / (time + 1)
     x2  = (1 / (time + 1)) + 1
     x3  = (1 / (time + 1)) - 1

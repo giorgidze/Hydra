@@ -3,7 +3,6 @@
 
 module Hydra.Stages.Quote (rel,fun) where
 
-import Hydra.Utils.Impossible (impossible)
 import qualified Hydra.BNFC.AbsHydra as BNFC
 import Hydra.Data
 import Hydra.Stages.Parse (parseSigRel,parseSigFun)
@@ -40,7 +39,7 @@ quotePattern :: BNFC.Pattern -> TH.PatQ
 quotePattern pat = case pat of
   BNFC.PatWild -> TH.wildP
   BNFC.PatUnit -> TH.conP (TH.mkName "Unit") []
-  BNFC.PatName _ (BNFC.Ident s1) -> TH.varP (TH.mkName s1)
+  BNFC.PatName (BNFC.Ident s1) -> TH.varP (TH.mkName s1)
   BNFC.PatPair pat1 pat2 -> TH.conP (TH.mkName "Pair") [quotePattern pat1, quotePattern pat2]
 
 quoteEquations :: [BNFC.Equation] -> TH.ExpQ
@@ -53,11 +52,7 @@ quoteEquations (eq : eqs) = case eq of
   BNFC.EquEqual  e1 e2 -> [| (Equal  $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
   BNFC.EquInit   e1 e2 -> [| (Init   $(quoteExpr e1) $(quoteExpr e2)) : $(quoteEquations eqs) |]
 
-  BNFC.EquLocal (BNFC.Ident s1) [] -> [| [Local ( $(TH.lamE [TH.varP (TH.mkName s1)] (quoteEquations eqs)) )] |]
-
-  BNFC.EquLocal       _ _   -> $impossible
-  BNFC.EquConnect     _ _ _ -> $impossible
-  BNFC.EquConnectFlow _ _ _ -> $impossible
+  BNFC.EquLocal (BNFC.Ident s1) -> [| [Local ( $(TH.lamE [TH.varP (TH.mkName s1)] (quoteEquations eqs)) )] |]
 
 quoteExpr :: BNFC.Expr -> TH.ExpQ
 quoteExpr e = case e of
@@ -77,7 +72,7 @@ quoteExpr e = case e of
   BNFC.ExprDiv e1 e2 -> [| $(quoteExpr e1) /  $(quoteExpr e2) :: Signal Double |]
   BNFC.ExprMul e1 e2 -> [| $(quoteExpr e1) *  $(quoteExpr e2) :: Signal Double |]
   BNFC.ExprPow e1 e2 -> [| $(quoteExpr e1) ** $(quoteExpr e2) :: Signal Double |]
-  BNFC.ExprNeg e1 -> [| negate $(quoteExpr e1) :: Signal Double |]
+  BNFC.ExprNeg e1    -> [| negate $(quoteExpr e1) :: Signal Double |]
   BNFC.ExprApp e1 e2 -> TH.appE (quoteExpr e1) (quoteExpr e2)
 
   BNFC.ExprInteger i1  -> [| Const ((fromIntegral i1) :: Double) |]

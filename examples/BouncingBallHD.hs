@@ -25,13 +25,19 @@ bouncingBall b = switch (freeFall b) [fun| ((_,y),_) -> y < 0 |] (\(p,v) -> divi
 divide :: Body -> SR Body
 divide ((x0,y0),(vx0,vy0)) = [rel| ((x,y),(vx,vy)) ->
     $bouncingBall ((x0,y0),( vx0 / 2, - vy0 / 2))$ <> ((x,y),(vx,vy))
-    local x' y' vx' vy'
+    local x'
+    local y'
+    local vx'
+    local vy'
     $bouncingBall ((x0,y0),(-vx0 / 2, - vy0 / 2))$ <> ((x',y'),(vx',vy'))
 |]
 
 mainSR :: SR ()
 mainSR = [rel| () ->
-    local x y vx vy
+    local x
+    local y
+    local vx
+    local vy
     $bouncingBall ((0,10),(1,0))$ <> ((x,y),(vx,vy))
 |]
 

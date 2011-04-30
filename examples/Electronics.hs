@@ -50,14 +50,14 @@ ground = [rel| (_,p_v) ->
 |]
 
 wire :: SR (Pin,Pin)
-wire = [rel| ((flow p_i,p_v),(flow n_i,n_v)) ->
+wire = [rel| ((p_i,p_v),(n_i,n_v)) ->
     local u
     $twoPin$ <> (((p_i,p_v),(n_i,n_v)),u)
     u = 0
 |]
 
 noWire :: SR (Pin,Pin)
-noWire = [rel| ((flow p_i,p_v),(flow n_i,n_v)) ->
+noWire = [rel| ((p_i,p_v),(n_i,n_v)) ->
     local u
     $twoPin$ <> (((p_i,p_v),(n_i,n_v)),u)
     p_i = 0
@@ -75,9 +75,15 @@ closedDiode = diode True
 
 serial :: SR (Pin,Pin) -> SR (Pin,Pin) -> SR (Pin,Pin)
 serial sr1 sr2 = [rel| ((p_i, p_v),(n_i, n_v)) ->
-    local p1_i p1_v n1_i n1_v
+    local p1_i
+    local p1_v
+    local n1_i
+    local n1_v
     $sr1$  <>  ((p1_i, p1_v), (n1_i, n1_v))
-    local p2_i p2_v n2_i n2_v
+    local p2_i
+    local p2_v
+    local n2_i
+    local n2_v
     $sr2$  <>  ((p2_i, p2_v), (n2_i, n2_v))
 
     (- p_i) + p1_i = 0
@@ -92,9 +98,15 @@ serial sr1 sr2 = [rel| ((p_i, p_v),(n_i, n_v)) ->
 
 parallel :: SR (Pin,Pin) -> SR (Pin,Pin) -> SR (Pin,Pin)
 parallel sr1 sr2 = [rel| ((p_i, p_v), (n_i, n_v)) ->
-    local p1_i p1_v n1_i n1_v
+    local p1_i
+    local p1_v
+    local n1_i
+    local n1_v
     $sr1$  <>  ((p1_i, p1_v), (n1_i, n1_v))
-    local p2_i p2_v n2_i n2_v
+    local p2_i
+    local p2_v
+    local n2_i
+    local n2_v
     $sr2$  <>  ((p2_i, p2_v), (n2_i, n2_v))
 
     (- p_i) + p1_i + p2_i = 0
@@ -108,13 +120,20 @@ parallel sr1 sr2 = [rel| ((p_i, p_v), (n_i, n_v)) ->
 
 groundedCircuit :: SR (Pin,Pin) -> SR (Pin,Pin) -> SR ()
 groundedCircuit sr1 sr2 = [rel| () ->
-    local p1_i p1_v n1_i n1_v
+    local p1_i
+    local p1_v
+    local n1_i
+    local n1_v
     $sr1$  <>  ((p1_i, p1_v), (n1_i, n1_v))
 
-    local p2_i p2_v n2_i n2_v
+    local p2_i
+    local p2_v
+    local n2_i
+    local n2_v
     $sr2$  <>  ((p2_i, p2_v), (n2_i, n2_v))
 
-    local gp_i gp_v
+    local gp_i
+    local gp_v
     $ground$ <> (gp_i,gp_v)
 
     p1_i + p2_i = 0

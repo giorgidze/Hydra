@@ -16,22 +16,15 @@ data SigFun =
 
 data Pattern =
    PatWild
- | PatName Qualifier Ident
+ | PatName Ident
  | PatUnit
  | PatPair Pattern Pattern
-  deriving (Eq,Ord,Show)
-
-data Qualifier =
-   QualEmpty
- | QualFlow
   deriving (Eq,Ord,Show)
 
 data Equation =
    EquEqual Expr Expr
  | EquInit Expr Expr
- | EquLocal Ident [Ident]
- | EquConnect Ident Ident [Ident]
- | EquConnectFlow Ident Ident [Ident]
+ | EquLocal Ident
  | EquSigRelApp HsExpr Expr
   deriving (Eq,Ord,Show)
 

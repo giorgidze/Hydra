@@ -21,7 +21,8 @@ bouncingBall b = switch (freeFall b) [fun| (x,_) -> x < 0 |] (\(x,v) -> bouncing
 
 mainSR :: SR ()
 mainSR = [rel| () ->
-    local x1 v1
+    local x1
+    local v1
     $bouncingBall (1.0,0.0)$ <> (x1,v1)
 |]
 

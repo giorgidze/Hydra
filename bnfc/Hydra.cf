@@ -5,18 +5,13 @@ SigRel. SigRel ::= Pattern "->" "{" [Equation] "}" ;
 SigFun. SigFun ::= Pattern "->" "{" Expr       "}" ;
 
 PatWild. Pattern ::= "_" ;
-PatName. Pattern ::= Qualifier Ident ;
+PatName. Pattern ::= Ident ;
 PatUnit. Pattern ::= "()" ;
 PatPair. Pattern ::= "(" Pattern "," Pattern ")" ;
 
-QualEmpty. Qualifier ::= ;
-QualFlow.  Qualifier ::= "flow" ;
-
-EquEqual.       Equation ::= Expr "=" Expr ;
+EquEqual.       Equation ::=        Expr "=" Expr ;
 EquInit.        Equation ::= "init" Expr "=" Expr ;
-EquLocal.       Equation ::= "local" Ident [Ident];
-EquConnect.     Equation ::= "connect" Ident Ident [Ident] ;
-EquConnectFlow. Equation ::= "connect" "flow" Ident Ident [Ident] ;
+EquLocal.       Equation ::= "local" Ident;
 EquSigRelApp.   Equation ::= HsExpr "<>" Expr ;
 
 ExprOr.      Expr1 ::= Expr1 "||" Expr2 ;
@@ -49,7 +44,6 @@ _.           Expr7 ::= Expr8 ;
 _.           Expr8 ::= "(" Expr ")" ;
 
 separator Equation ";" ;
-separator Ident "" ;
 
 comment "--" ;
 comment "{-" "-}" ;

@@ -23,7 +23,8 @@ freeFall ((x0,y0),(vx0,vy0)) = [rel| ((x,y),(vx,vy)) ->
 
 pendulum :: Double -> Double -> SR Body
 pendulum l phi0 = [rel| ((x,y),(vx,vy)) ->
-    local phi phid
+    local phi
+    local phid
 
     init phi  = $phi0$
     init phid = 0
@@ -42,7 +43,10 @@ breakingPendulum t l phi0 = switch (pendulum l phi0) [fun| ((_,_),(_,_)) -> time
 
 mainSR :: SR ()
 mainSR = [rel| () ->
-    local x y vx vy
+    local x
+    local y
+    local vx
+    local vy
     $breakingPendulum 5 1 (pi / 4)$ <> ((x,y),(vx,vy))
 |]
 

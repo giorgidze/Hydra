@@ -7,7 +7,8 @@ import Hydra.Solver.Sundials
 
 vanDerPol :: Double -> SR ()
 vanDerPol lambda = [rel| () ->
-    local x y
+    local x
+    local y
     init x = 1
     init y = 1
     y = der x
