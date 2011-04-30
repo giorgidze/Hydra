@@ -1,3 +1,7 @@
+set terminal pdf
+set output "plot.pdf"
+set xlabel "time"
+
 plot "plot.dat" using 1:2 with lines, \
      "plot.dat" using 1:3 with lines, \
      "plot.dat" using 1:4 with lines, \
@@ -16,8 +20,3 @@ plot "plot.dat" using 1:2 with lines, \
      "plot.dat" using 1:18 with lines, \
      "plot.dat" using 1:19 with lines, \
      "plot.dat" using 1:20 with lines
-
-# set terminal postscript color
-# set output "plot.ps"
-# replot
-# set terminal x11

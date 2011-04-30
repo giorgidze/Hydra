@@ -6,7 +6,7 @@ import Hydra
 import Hydra.Solver.Sundials
 
 functions :: SR ()
-functions = [$rel| () ->
+functions = [rel| () ->
     local x1 x2 x3 x4 x5 x6 x7 x8 x9 x10
     local x11 x12 x13 x14 x15 x16 x17 x18 x19 x20
     local x21 x22 x23 x24 x25

@@ -27,4 +27,4 @@ plot: all
 		gnuplot -persist plot
 
 clean:
-		rm -f *.hi *.p_o *.o *.prof *.hp *.ps *.dat $(MODEL)
+		rm -f *.hi *.p_o *.o *.prof *.hp *.ps *.dat *.pdf $(MODEL)

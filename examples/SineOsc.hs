@@ -6,7 +6,7 @@ import Hydra
 import Hydra.Solver.Sundials
 
 sineOsc :: SR ()
-sineOsc = [$rel| () ->
+sineOsc = [rel| () ->
   local o
   o = sin time
 |]
