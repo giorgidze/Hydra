@@ -73,6 +73,10 @@ quoteExpr e = case e of
   BNFC.ExprMul e1 e2 -> [| $(quoteExpr e1) *  $(quoteExpr e2) :: Signal Double |]
   BNFC.ExprPow e1 e2 -> [| $(quoteExpr e1) ** $(quoteExpr e2) :: Signal Double |]
   BNFC.ExprNeg e1    -> [| negate $(quoteExpr e1) :: Signal Double |]
+
+  BNFC.ExprApp (BNFC.ExprAnti (BNFC.HsExpr s1)) e2 ->case parseExp (init (tail s1)) of
+    Left s2  -> fail s2
+    Right e1 -> TH.appE [| case $(return e1) of SF f -> f |] (quoteExpr e2)
   BNFC.ExprApp e1 e2 -> TH.appE (quoteExpr e1) (quoteExpr e2)
 
   BNFC.ExprInteger i1  -> [| Const ((fromIntegral i1) :: Double) |]
