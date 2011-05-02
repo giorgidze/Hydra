@@ -211,11 +211,10 @@ compileSigBool sb = case sb of
     builderRef1 <- return . builderRef =<< get
     lift $ FFI.withCString [] $ \s -> LLVM.buildAnd  builderRef1 valueRef1 valueRef2 s
 
-  PrimApp Xor (Pair sb1 sb2) -> do
+  PrimApp Not sb1 -> do
     valueRef1 <- compileSigBool sb1
-    valueRef2 <- compileSigBool sb2
     builderRef1 <- return . builderRef =<< get
-    lift $ FFI.withCString [] $ \s -> LLVM.buildXor  builderRef1 valueRef1 valueRef2 s
+    lift $ FFI.withCString [] $ \s -> LLVM.buildNot  builderRef1 valueRef1 s
 
   PrimApp Gt s1 -> do
     valueRef1 <- compileSig s1
@@ -265,11 +264,20 @@ compileSig e = do
     PrimApp Der (Var i1) -> do
       params1 <- return . params =<< get
       compileGetVectorElement (ypVecRef params1) i1
+    PrimApp Neg e1 -> do
+      e1Ref <- compileSig e1
+      lift $ FFI.withCString []
+           $ \s -> LLVM.buildFNeg builderRef1 e1Ref s
     PrimApp Add (Pair e1 e2) -> do
       e1Ref <- compileSig e1
       e2Ref <- compileSig e2
       lift $ FFI.withCString []
            $ \s -> LLVM.buildFAdd builderRef1 e1Ref e2Ref s
+    PrimApp Sub (Pair e1 e2) -> do
+      e1Ref <- compileSig e1
+      e2Ref <- compileSig e2
+      lift $ FFI.withCString []
+           $ \s -> LLVM.buildFSub builderRef1 e1Ref e2Ref s
     PrimApp Div (Pair e1 e2) -> do
       e1Ref <- compileSig e1
       e2Ref <- compileSig e2
@@ -301,7 +309,7 @@ compileSig e = do
     PrimApp Abs   e1    -> compileFunctionCall "fabs"  [e1]
     PrimApp Sgn   e1    -> compileFunctionCall "hydra_signum" [e1]
 
-    PrimApp _ _ -> $impossible
+    PrimApp _ _         -> $impossible
 
 compileFunctionCall :: String -> [Signal Double] -> C LLVM.ValueRef
 compileFunctionCall s es = do
@@ -357,9 +365,6 @@ createBasicBlock s = do
   basicBlockRef1 <- lift
     $ FFI.withCString s
     $ \s1 -> LLVM.appendBasicBlock functionRef1 s1
-  -- builderRef1 <- lift $ LLVM.createBuilder
-  -- lift $ LLVM.positionAtEnd builderRef1 basicBlockRef1
-
   return (basicBlockRef1)
 
 cleanupBuilder :: C ()

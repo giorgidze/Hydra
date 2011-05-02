@@ -1,5 +1,5 @@
 name: Hydra
-version: 0.4.1
+version: 0.4.2
 cabal-version: >= 1.2
 license: BSD3
 license-file: LICENSE
@@ -10,7 +10,10 @@ homepage: http://www.cs.nott.ac.uk/~ggg/
 category: Language, Math, Physics
 stability: experimental
 synopsis: Functional Hybrid Modelling (FHM) language.
-description: An implementation of Hydra, a Functional Hybrid Modelling (FHM) language, as a domain specific language embedded in Haskell.
+
+description:  An implementation of Hydra, a Functional Hybrid Modelling (FHM)
+              language, as a domain specific language embedded in Haskell.
+
 build-type: Custom
 
 extra-source-files:

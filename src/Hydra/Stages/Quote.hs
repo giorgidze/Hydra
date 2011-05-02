@@ -60,19 +60,37 @@ quoteExpr e = case e of
     Left s2  -> fail s2
     Right e1 -> [| Const $(return e1) |]
 
-  BNFC.ExprVar (BNFC.Ident "time")  -> [| Time |]
-  BNFC.ExprVar (BNFC.Ident "not")   -> [| \s -> PrimApp Xor (Pair (Const True) s) |]
-  BNFC.ExprVar (BNFC.Ident "der")   -> [| PrimApp Der |]
-  BNFC.ExprVar (BNFC.Ident "true")  -> [| Const True |]
-  BNFC.ExprVar (BNFC.Ident "false") -> [| Const False |]  
-  BNFC.ExprVar (BNFC.Ident s1)      -> TH.varE (TH.mkName s1)
+  BNFC.ExprVar (BNFC.Ident "time")   -> [| Time           |]
+  BNFC.ExprVar (BNFC.Ident "true")   -> [| Const True     |]
+  BNFC.ExprVar (BNFC.Ident "false")  -> [| Const False    |]
+  BNFC.ExprVar (BNFC.Ident "not")    -> [| PrimApp Not    |]
+  BNFC.ExprVar (BNFC.Ident "der")    -> [| PrimApp Der    |]
+  BNFC.ExprVar (BNFC.Ident "exp")    -> [| PrimApp Exp    |]
+  BNFC.ExprVar (BNFC.Ident "sqrt")   -> [| PrimApp Sqrt   |]
+  BNFC.ExprVar (BNFC.Ident "log")    -> [| PrimApp Log    |]
+  BNFC.ExprVar (BNFC.Ident "sin")    -> [| PrimApp Sin    |]
+  BNFC.ExprVar (BNFC.Ident "tan")    -> [| PrimApp Tan    |]
+  BNFC.ExprVar (BNFC.Ident "cos")    -> [| PrimApp Cos    |]
+  BNFC.ExprVar (BNFC.Ident "asin")   -> [| PrimApp Asin   |]
+  BNFC.ExprVar (BNFC.Ident "atan")   -> [| PrimApp Atan   |]
+  BNFC.ExprVar (BNFC.Ident "acos")   -> [| PrimApp Acos   |]
+  BNFC.ExprVar (BNFC.Ident "sinh")   -> [| PrimApp Sinh   |]
+  BNFC.ExprVar (BNFC.Ident "tanh")   -> [| PrimApp Tanh   |]
+  BNFC.ExprVar (BNFC.Ident "cosh")   -> [| PrimApp Cosh   |]
+  BNFC.ExprVar (BNFC.Ident "asinh")  -> [| PrimApp Asinh  |]
+  BNFC.ExprVar (BNFC.Ident "atanh")  -> [| PrimApp Atanh  |]
+  BNFC.ExprVar (BNFC.Ident "acosh")  -> [| PrimApp Acosh  |]
+  BNFC.ExprVar (BNFC.Ident "abs")    -> [| PrimApp Abs    |]
+  BNFC.ExprVar (BNFC.Ident "signum") -> [| PrimApp Sgn    |]
 
-  BNFC.ExprAdd e1 e2 -> [| $(quoteExpr e1) +  $(quoteExpr e2) :: Signal Double |]
-  BNFC.ExprSub e1 e2 -> [| $(quoteExpr e1) -  $(quoteExpr e2) :: Signal Double |]
-  BNFC.ExprDiv e1 e2 -> [| $(quoteExpr e1) /  $(quoteExpr e2) :: Signal Double |]
-  BNFC.ExprMul e1 e2 -> [| $(quoteExpr e1) *  $(quoteExpr e2) :: Signal Double |]
-  BNFC.ExprPow e1 e2 -> [| $(quoteExpr e1) ** $(quoteExpr e2) :: Signal Double |]
-  BNFC.ExprNeg e1    -> [| negate $(quoteExpr e1) :: Signal Double |]
+  BNFC.ExprVar (BNFC.Ident s1)       -> TH.varE (TH.mkName s1)
+
+  BNFC.ExprAdd e1 e2 -> [| PrimApp Add (Pair $(quoteExpr e1)  $(quoteExpr e2)) |]
+  BNFC.ExprSub e1 e2 -> [| PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2)) |]
+  BNFC.ExprDiv e1 e2 -> [| PrimApp Div (Pair $(quoteExpr e1)  $(quoteExpr e2)) |]
+  BNFC.ExprMul e1 e2 -> [| PrimApp Mul (Pair $(quoteExpr e1)  $(quoteExpr e2)) |]
+  BNFC.ExprPow e1 e2 -> [| PrimApp Pow (Pair $(quoteExpr e1)  $(quoteExpr e2)) |]
+  BNFC.ExprNeg e1    -> [| PrimApp Neg $(quoteExpr e1) |]
 
   BNFC.ExprApp (BNFC.ExprAnti (BNFC.HsExpr s1)) e2 ->case parseExp (init (tail s1)) of
     Left s2  -> fail s2
@@ -86,7 +104,7 @@ quoteExpr e = case e of
 
   BNFC.ExprOr  be1 be2 -> [| PrimApp Or  (Pair $(quoteExpr be1) $(quoteExpr be2)) |]
   BNFC.ExprAnd be1 be2 -> [| PrimApp And (Pair $(quoteExpr be1) $(quoteExpr be2)) |]
-  BNFC.ExprLt  e1  e2  -> [| PrimApp Lt  ($(quoteExpr  e1) - $(quoteExpr e2)) |]
-  BNFC.ExprLte e1  e2  -> [| PrimApp Lte ($(quoteExpr  e1) - $(quoteExpr e2)) |]
-  BNFC.ExprGt  e1  e2  -> [| PrimApp Gt  ($(quoteExpr  e1) - $(quoteExpr e2)) |]
-  BNFC.ExprGte e1  e2  -> [| PrimApp Gte ($(quoteExpr  e1) - $(quoteExpr e2)) |]
+  BNFC.ExprLt  e1  e2  -> [| PrimApp Lt  (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]
+  BNFC.ExprLte e1  e2  -> [| PrimApp Lte (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]
+  BNFC.ExprGt  e1  e2  -> [| PrimApp Gt  (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]
+  BNFC.ExprGte e1  e2  -> [| PrimApp Gte (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]

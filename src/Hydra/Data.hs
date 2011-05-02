@@ -39,18 +39,18 @@ instance Eq (Signal a) where
   a == b = (show a == show b)
 
 instance Show (Signal a) where
-  show Unit = "Unit"
-  show Time = "Time"
-  show (Const a) = "Const (" ++ show a ++ ")"
-  show (Pair a b) = "Pair (" ++ show a ++ ") (" ++ show b ++ ")"
+  show Unit           = "Unit"
+  show Time           = "Time"
+  show (Const a)      = "Const ("   ++ show a  ++ ")"
+  show (Pair a b)     = "Pair ("    ++ show a  ++ ") (" ++ show b ++ ")"
   show (PrimApp sf s) = "PrimApp (" ++ show sf ++ ") (" ++ show s ++ ")"
-  show (Var i) = "Var (" ++ show i ++ ")"
+  show (Var i)        = "Var ("     ++ show i  ++ ")"
 
 data PrimSF a b where
   Der    :: PrimSF Double Double
+  Not    :: PrimSF Bool Bool
   Or     :: PrimSF (Bool,Bool) Bool
   And    :: PrimSF (Bool,Bool) Bool
-  Xor    :: PrimSF (Bool,Bool) Bool
   Lt     :: PrimSF Double Bool
   Lte    :: PrimSF Double Bool
   Gt     :: PrimSF Double Bool
@@ -72,14 +72,15 @@ data PrimSF a b where
   Acosh  :: PrimSF Double Double
   Abs    :: PrimSF Double Double
   Sgn    :: PrimSF Double Double
+  Neg    :: PrimSF Double Double
   Add    :: PrimSF (Double,Double) Double
+  Sub    :: PrimSF (Double,Double) Double
   Mul    :: PrimSF (Double,Double) Double
   Div    :: PrimSF (Double,Double) Double
   Pow    :: PrimSF (Double,Double) Double
 
 deriving instance Eq   (PrimSF a b)
 deriving instance Show (PrimSF a b)
-
 
 switch :: SR a -> SF a Bool -> (a -> SR a) -> SR a
 switch = Switch
@@ -114,51 +115,20 @@ evalPrimSF sf = case sf of
   Acosh -> acosh
   Abs   -> abs
   Sgn   -> signum
+  Neg   -> negate
   Add   -> uncurry (+)
+  Sub   -> uncurry (-)
   Mul   -> uncurry (*)
   Div   -> uncurry (/)
   Pow   -> uncurry (**)
   Lt    -> \d -> (d <  0)
   Lte   -> \d -> (d <= 0)
-  Gt    -> \d -> (d >  0) 
+  Gt    -> \d -> (d >  0)
   Gte   -> \d -> (d >= 0)
   Or    -> uncurry (||)
   And   -> uncurry (&&)
-  Xor   -> \(p,q) -> if p then Prelude.not q else q
+  Not   -> not
   Der   -> $impossible
-
-instance Num (Signal Double) where
-  (+) e1 e2     = PrimApp Add (Pair e1 e2)
-  (*) e1 e2     = PrimApp Mul (Pair e1 e2)
-  (-) e1 e2     = PrimApp Add (Pair e1 ((Const (-1)) * e2))
-  negate e1     = (Const (-1)) * e1
-  abs e1        = PrimApp Abs e1
-  signum e1     = PrimApp Sgn e1
-  fromInteger i = Const (fromIntegral i)
-
-instance Fractional (Signal Double) where
-  (/) e1 e2 = PrimApp Div (Pair e1 e2)
-  recip e1 = 1 / e1
-  fromRational r = Const (fromRational r)
-
-instance Floating (Signal Double) where
-  pi          = Const pi
-  exp   e1    = PrimApp Exp   e1
-  log   e1    = PrimApp Log   e1
-  sqrt  e1    = PrimApp Sqrt  e1
-  sin   e1    = PrimApp Sin   e1
-  cos   e1    = PrimApp Cos   e1
-  tan   e1    = PrimApp Tan   e1
-  asin  e1    = PrimApp Asin  e1
-  acos  e1    = PrimApp Acos  e1
-  atan  e1    = PrimApp Atan  e1
-  sinh  e1    = PrimApp Sinh  e1
-  cosh  e1    = PrimApp Cosh  e1
-  tanh  e1    = PrimApp Tanh  e1
-  asinh e1    = PrimApp Asinh e1
-  acosh e1    = PrimApp Acosh e1
-  atanh e1    = PrimApp Atanh e1
-  (**) e1 e2  = PrimApp Pow   (Pair e1 e2)
 
 isVar :: Signal Double -> Bool
 isVar (Var _) = True
@@ -252,7 +222,7 @@ experimentDefault = Experiment {
   , visualise = visualiseDump
   , solver = error "Solver has not been specified. You can use the solver defined in hydra-sundials package or provide your own."
   }
-  
+
 visualiseDump :: CDouble -> CInt -> Ptr CDouble -> IO ()
 visualiseDump time len arr = do
   putStr (show time)
