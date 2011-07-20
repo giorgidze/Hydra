@@ -9,7 +9,7 @@ handleEvents st =
          then st
          else st {model = handleEvs st evs (model st)}
 
-handleEvs :: SymTab -> [Signal Bool] -> [Equation] -> [Equation]
+handleEvs :: SymTab -> [Signal Double] -> [Equation] -> [Equation]
 handleEvs _ _ [] = []
 handleEvs st evs (eq : eqs) = case eq of
   Local f1 -> Local (\s -> handleEvs st evs (f1 s)) : handleEvs st evs eqs

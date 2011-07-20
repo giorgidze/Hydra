@@ -16,7 +16,7 @@ import Foreign.C.Types
 
 data SR a where
   SR     :: (Signal a -> [Equation]) -> SR a
-  Switch :: SR a -> SF a Bool -> (a -> SR a) -> SR a
+  Switch :: SR a -> SF a Double -> (a -> SR a) -> SR a
 
 data SF a b where
   SF     :: (Signal a -> Signal b) -> SF a b
@@ -30,7 +30,7 @@ data Equation where
 data Signal a where
   Unit    :: Signal ()
   Time    :: Signal Double
-  Const   :: (Show a) => a -> Signal a
+  Const   :: Double -> Signal Double
   Pair    :: (Show a, Show b) => Signal a -> Signal b -> Signal (a,b)
   PrimApp :: (Show a, Show b) => PrimSF a b -> Signal a -> Signal b
   Var     :: Int -> Signal Double
@@ -48,13 +48,6 @@ instance Show (Signal a) where
 
 data PrimSF a b where
   Der    :: PrimSF Double Double
-  Not    :: PrimSF Bool Bool
-  Or     :: PrimSF (Bool,Bool) Bool
-  And    :: PrimSF (Bool,Bool) Bool
-  Lt     :: PrimSF Double Bool
-  Lte    :: PrimSF Double Bool
-  Gt     :: PrimSF Double Bool
-  Gte    :: PrimSF Double Bool
   Exp    :: PrimSF Double Double
   Sqrt   :: PrimSF Double Double
   Log    :: PrimSF Double Double
@@ -82,7 +75,7 @@ data PrimSF a b where
 deriving instance Eq   (PrimSF a b)
 deriving instance Show (PrimSF a b)
 
-switch :: SR a -> SF a Bool -> (a -> SR a) -> SR a
+switch :: SR a -> SF a Double -> (a -> SR a) -> SR a
 switch = Switch
 
 eval :: SymTab -> Signal a -> a
@@ -121,13 +114,6 @@ evalPrimSF sf = case sf of
   Mul   -> uncurry (*)
   Div   -> uncurry (/)
   Pow   -> uncurry (**)
-  Lt    -> \d -> (d <  0)
-  Lte   -> \d -> (d <= 0)
-  Gt    -> \d -> (d >  0)
-  Gte   -> \d -> (d >= 0)
-  Or    -> uncurry (||)
-  And   -> uncurry (&&)
-  Not   -> not
   Der   -> $impossible
 
 isVar :: Signal Double -> Bool
@@ -145,7 +131,7 @@ isConstZero _         = False
 data SymTab = SymTab {
     model         :: [Equation]
   , variables     :: Map Int (Maybe Double)
-  , events        :: [(Signal Bool,(Int,Bool))]
+  , events        :: [(Signal Double,(Int,Bool))]
   , equations     :: [Signal Double]
   , timeCurrent   :: Double
   , instants      :: Map Int Double

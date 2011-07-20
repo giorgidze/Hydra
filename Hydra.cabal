@@ -1,5 +1,5 @@
 name: Hydra
-version: 0.4.2
+version: 0.4.3
 cabal-version: >= 1.2
 license: BSD3
 license-file: LICENSE

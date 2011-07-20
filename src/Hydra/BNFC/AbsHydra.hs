@@ -29,13 +29,7 @@ data Equation =
   deriving (Eq,Ord,Show)
 
 data Expr =
-   ExprOr Expr Expr
- | ExprAnd Expr Expr
- | ExprLt Expr Expr
- | ExprLte Expr Expr
- | ExprGt Expr Expr
- | ExprGte Expr Expr
- | ExprAdd Expr Expr
+   ExprAdd Expr Expr
  | ExprSub Expr Expr
  | ExprDiv Expr Expr
  | ExprMul Expr Expr

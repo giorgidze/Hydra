@@ -186,61 +186,61 @@ listPartition :: Int -> [a] -> [[a]]
 listPartition _ [] = []
 listPartition n xs = (take n xs) : listPartition n (drop n xs)
 
-compileEvents :: [Signal Bool] -> C ()
+compileEvents :: [Signal Double] -> C ()
 compileEvents evs = mapM_ (uncurry go) $ zip [0 .. ] evs
   where
-  go :: Int -> Signal Bool -> C ()
-  go i sb = do
-    valueRef1 <- (compileSigBool sb >>= compileBoolToDouble)
+  go :: Int -> Signal Double -> C ()
+  go i zc = do
+    valueRef1 <- compileSig zc
     params1 <- return . params =<< get
     compileSetVectorElement (rVecRef params1) i valueRef1
 
-compileSigBool :: Signal Bool -> C LLVM.ValueRef
-compileSigBool sb = case sb of
-  Const False -> return $ LLVM.constInt LLVM.int1Type 0 0
-  Const True  -> return $ LLVM.constInt LLVM.int1Type 1 0
-  PrimApp Or (Pair sb1 sb2) -> do
-    valueRef1 <- compileSigBool sb1
-    valueRef2 <- compileSigBool sb2
-    builderRef1 <- return . builderRef =<< get
-    lift $ FFI.withCString [] $ \s -> LLVM.buildOr  builderRef1 valueRef1 valueRef2 s
-
-  PrimApp And (Pair sb1 sb2) -> do
-    valueRef1 <- compileSigBool sb1
-    valueRef2 <- compileSigBool sb2
-    builderRef1 <- return . builderRef =<< get
-    lift $ FFI.withCString [] $ \s -> LLVM.buildAnd  builderRef1 valueRef1 valueRef2 s
-
-  PrimApp Not sb1 -> do
-    valueRef1 <- compileSigBool sb1
-    builderRef1 <- return . builderRef =<< get
-    lift $ FFI.withCString [] $ \s -> LLVM.buildNot  builderRef1 valueRef1 s
-
-  PrimApp Gt s1 -> do
-    valueRef1 <- compileSig s1
-    builderRef1 <- return . builderRef =<< get
-    let zero = LLVM.constReal LLVM.doubleType 0.0
-    lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 2 valueRef1 zero s
-
-  PrimApp Gte s1 -> do
-    valueRef1 <- compileSig s1
-    builderRef1 <- return . builderRef =<< get
-    let zero = LLVM.constReal LLVM.doubleType 0.0
-    lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 3 valueRef1 zero s
-
-  PrimApp Lt s1 -> do
-    valueRef1 <- compileSig s1
-    builderRef1 <- return . builderRef =<< get
-    let zero = LLVM.constReal LLVM.doubleType 0.0
-    lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 4 valueRef1 zero s
-
-  PrimApp Lte s1 -> do
-    valueRef1 <- compileSig s1
-    builderRef1 <- return . builderRef =<< get
-    let zero = LLVM.constReal LLVM.doubleType 0.0
-    lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 5 valueRef1 zero s
-
-  PrimApp _ _ -> $impossible
+-- compileSigBool :: Signal Bool -> C LLVM.ValueRef
+-- compileSigBool sb = case sb of
+--   Const False -> return $ LLVM.constInt LLVM.int1Type 0 0
+--   Const True  -> return $ LLVM.constInt LLVM.int1Type 1 0
+--   PrimApp Or (Pair sb1 sb2) -> do
+--     valueRef1 <- compileSigBool sb1
+--     valueRef2 <- compileSigBool sb2
+--     builderRef1 <- return . builderRef =<< get
+--     lift $ FFI.withCString [] $ \s -> LLVM.buildOr  builderRef1 valueRef1 valueRef2 s
+-- 
+--   PrimApp And (Pair sb1 sb2) -> do
+--     valueRef1 <- compileSigBool sb1
+--     valueRef2 <- compileSigBool sb2
+--     builderRef1 <- return . builderRef =<< get
+--     lift $ FFI.withCString [] $ \s -> LLVM.buildAnd  builderRef1 valueRef1 valueRef2 s
+-- 
+--   PrimApp Not sb1 -> do
+--     valueRef1 <- compileSigBool sb1
+--     builderRef1 <- return . builderRef =<< get
+--     lift $ FFI.withCString [] $ \s -> LLVM.buildNot  builderRef1 valueRef1 s
+-- 
+--   PrimApp Gt s1 -> do
+--     valueRef1 <- compileSig s1
+--     builderRef1 <- return . builderRef =<< get
+--     let zero = LLVM.constReal LLVM.doubleType 0.0
+--     lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 2 valueRef1 zero s
+-- 
+--   PrimApp Gte s1 -> do
+--     valueRef1 <- compileSig s1
+--     builderRef1 <- return . builderRef =<< get
+--     let zero = LLVM.constReal LLVM.doubleType 0.0
+--     lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 3 valueRef1 zero s
+-- 
+--   PrimApp Lt s1 -> do
+--     valueRef1 <- compileSig s1
+--     builderRef1 <- return . builderRef =<< get
+--     let zero = LLVM.constReal LLVM.doubleType 0.0
+--     lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 4 valueRef1 zero s
+-- 
+--   PrimApp Lte s1 -> do
+--     valueRef1 <- compileSig s1
+--     builderRef1 <- return . builderRef =<< get
+--     let zero = LLVM.constReal LLVM.doubleType 0.0
+--     lift $ FFI.withCString [] $ \s -> LLVM.buildFCmp builderRef1 5 valueRef1 zero s
+-- 
+--   PrimApp _ _ -> $impossible
 
 compileBoolToDouble :: LLVM.ValueRef -> C LLVM.ValueRef
 compileBoolToDouble b = do

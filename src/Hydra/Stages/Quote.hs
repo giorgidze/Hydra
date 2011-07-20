@@ -61,9 +61,6 @@ quoteExpr e = case e of
     Right e1 -> [| Const $(return e1) |]
 
   BNFC.ExprVar (BNFC.Ident "time")   -> [| Time           |]
-  BNFC.ExprVar (BNFC.Ident "true")   -> [| Const True     |]
-  BNFC.ExprVar (BNFC.Ident "false")  -> [| Const False    |]
-  BNFC.ExprVar (BNFC.Ident "not")    -> [| PrimApp Not    |]
   BNFC.ExprVar (BNFC.Ident "der")    -> [| PrimApp Der    |]
   BNFC.ExprVar (BNFC.Ident "exp")    -> [| PrimApp Exp    |]
   BNFC.ExprVar (BNFC.Ident "sqrt")   -> [| PrimApp Sqrt   |]
@@ -101,10 +98,3 @@ quoteExpr e = case e of
   BNFC.ExprDouble d1   -> [| Const $(TH.litE (TH.rationalL (toRational d1))) |]
   BNFC.ExprUnit        -> [| Unit |]
   BNFC.ExprPair e1 e2  -> TH.appE (TH.appE (TH.conE (TH.mkName "Pair")) (quoteExpr e1)) (quoteExpr e2)
-
-  BNFC.ExprOr  be1 be2 -> [| PrimApp Or  (Pair $(quoteExpr be1) $(quoteExpr be2)) |]
-  BNFC.ExprAnd be1 be2 -> [| PrimApp And (Pair $(quoteExpr be1) $(quoteExpr be2)) |]
-  BNFC.ExprLt  e1  e2  -> [| PrimApp Lt  (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]
-  BNFC.ExprLte e1  e2  -> [| PrimApp Lte (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]
-  BNFC.ExprGt  e1  e2  -> [| PrimApp Gt  (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]
-  BNFC.ExprGte e1  e2  -> [| PrimApp Gte (PrimApp Sub (Pair $(quoteExpr e1)  $(quoteExpr e2))) |]
