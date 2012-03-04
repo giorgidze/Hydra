@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes, GADTs #-}
 
-module Electronics where
+module Main where
 
 import Hydra
 import Hydra.Solver.Sundials
@@ -64,8 +64,8 @@ noWire = [rel| ((p_i,p_v),(n_i,n_v)) ->
 |]
 
 diode :: Bool -> SR (Pin,Pin)
-diode False = switch noWire [fun| ((_,p_v),(_,n_v)) -> p_v - n_v > 0 |] (\_ -> diode True)
-diode True  = switch wire   [fun| ((p_i,_),(_,_))   -> p_i < 0 |]       (\_ -> diode False)
+diode False = switch noWire [fun| ((_,p_v),(_,n_v)) -> p_v - n_v |] (\_ -> diode True)
+diode True  = switch wire   [fun| ((p_i,_),(_,_))   -> p_i |]       (\_ -> diode False)
 
 openedDiode :: SR (Pin,Pin)
 openedDiode = diode False

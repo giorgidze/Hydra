@@ -39,7 +39,7 @@ pendulum l phi0 = [rel| ((x,y),(vx,vy)) ->
 |]
 
 breakingPendulum :: Double -> Double -> Double -> SR Body
-breakingPendulum t l phi0 = switch (pendulum l phi0) [fun| ((_,_),(_,_)) -> time > $t$ |] freeFall
+breakingPendulum t l phi0 = switch (pendulum l phi0) [fun| ((_,_),(_,_)) -> time - $t$ |] freeFall
 
 mainSR :: SR ()
 mainSR = [rel| () ->

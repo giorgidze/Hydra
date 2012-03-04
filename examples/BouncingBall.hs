@@ -17,7 +17,7 @@ freeFall (x0,v0) = [rel| (x,v) ->
 |]
 
 bouncingBall :: Body -> SR Body
-bouncingBall b = switch (freeFall b) [fun| (x,_) -> x < 0 |] (\(x,v) -> bouncingBall (x,-v))
+bouncingBall b = switch (freeFall b) [fun| (x,_) -> x |] (\(x,v) -> bouncingBall (x,-v))
 
 mainSR :: SR ()
 mainSR = [rel| () ->

@@ -20,7 +20,7 @@ freeFall ((x0,y0),(vx0,vy0)) = [rel| ((x,y),(vx,vy)) ->
 |]
 
 bouncingBall :: Body -> SR Body
-bouncingBall b = switch (freeFall b) [fun| ((_,y),_) -> y < 0 |] (\(p,v) -> divide (p,v))
+bouncingBall b = switch (freeFall b) [fun| ((_,y),_) -> y |] (\(p,v) -> divide (p,v))
 
 divide :: Body -> SR Body
 divide ((x0,y0),(vx0,vy0)) = [rel| ((x,y),(vx,vy)) ->
