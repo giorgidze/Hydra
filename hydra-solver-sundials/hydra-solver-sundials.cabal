@@ -6,7 +6,7 @@ License-file:        LICENSE
 Author:              George Giorgidze
 Maintainer:          giorgidze@gmail.com
 Category:            Math
-Build-type:          Simple
+Build-type:          Custom
 Cabal-version:       >= 1.2
 
 
